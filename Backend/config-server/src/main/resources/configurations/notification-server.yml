@@ -1,0 +1,11 @@
+server:
+  port: 8040
+spring:
+  data:
+    mongodb:
+      username: omar
+      password: omar
+      host: localhost
+      port: 27017
+      database: notification
+      authentication-database: admin
