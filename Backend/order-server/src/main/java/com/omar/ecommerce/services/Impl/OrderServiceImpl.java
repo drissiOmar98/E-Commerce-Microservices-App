@@ -1,6 +1,8 @@
 package com.omar.ecommerce.services.Impl;
 
 import com.omar.ecommerce.client.customer.CustomerClient;
+import com.omar.ecommerce.client.payment.PaymentClient;
+import com.omar.ecommerce.client.payment.PaymentRequest;
 import com.omar.ecommerce.client.product.ProductClient;
 import com.omar.ecommerce.client.product.PurchaseRequest;
 import com.omar.ecommerce.dto.order.OrderMapper;
@@ -31,6 +33,7 @@ public class OrderServiceImpl implements OrderService {
     private final ProductClient productClient;
     private final OrderLineService orderLineService;
     private final OrderProducer orderProducer;
+    private final PaymentClient paymentClient;
 
 
 
@@ -60,7 +63,15 @@ public class OrderServiceImpl implements OrderService {
             );
         }
 
-        // todo start the payment
+        // start the payment
+        var paymentRequest = new PaymentRequest(
+                request.amount(),
+                request.paymentMethod(),
+                order.getId(),
+                order.getReference(),
+                customer
+        );
+        paymentClient.requestOrderPayment(paymentRequest);
 
 
         // send the order confirmation --> notif-ms (Kafka)
