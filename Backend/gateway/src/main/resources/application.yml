@@ -1,4 +1,9 @@
 spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: "http://localhost:9098/realms/Ecommerce-microservices"
   config:
     import: optional:configserver:http://localhost:8888
   application:
