@@ -74,6 +74,18 @@ services:
     networks:
       - microservices-net
 
+
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - microservices-net
+    restart: unless-stopped
+
   kafka:
     image: confluentinc/cp-kafka:latest
     container_name: ms_kafka
