@@ -1,0 +1,49 @@
+<div class="px-4">
+  @switch (this.currentStep.id) {
+    @case (CATEGORY) {
+      <app-category-step [selectedCategory]="newProduct.categoryId"
+                         (categorySelected)="onCategorySelected($event)"
+                         (stepValidityChange)="onValidityChange($event)"></app-category-step>
+    }
+    @case (SUBCATEGORY) {
+      <app-subcategory-step [categoryId]="categoryIdFromStep1"
+                            [selectedSubCategory]="newProduct.subcategoryId"
+                            (subCategory)="onSubCategorySelected($event)"
+                            (stepValidityChange)="onValidityChange($event)">
+      </app-subcategory-step>
+    }
+    @case (INFO) {
+      <div class="mb-5">
+        <app-description-step [infos]="newProduct.infos"
+                       (infoChange)="onInfoChange($event)"
+                       (stepValidityChange)="onValidityChange($event)"></app-description-step>
+      </div>
+    }
+    @case (PHOTOS) {
+      <app-picture-step [pictures]="newProduct.pictures"
+                        (picturesChange)="onPictureChange($event)"
+                        (stepValidityChange)="onValidityChange($event)"></app-picture-step>
+    }
+
+    @case (QUANTITY) {
+      <app-quantity-step [availableQuantity]="newProduct.infos"
+                      (quantityChange)="onAvailableQuantityChange($event)"
+                      (stepValidityChange)="onValidityChange($event)"></app-quantity-step>
+    }
+
+    @case (PRICE) {
+      <app-price-step [price]="newProduct.price"
+                      (priceChange)="onPriceChange($event)"
+                      (stepValidityChange)="onValidityChange($event)"></app-price-step>
+    }
+
+
+  }
+</div>
+<app-footer-step [currentStep]="currentStep"
+                 [isAllStepsValid]="isAllStepsValid()"
+                 [loading]="loadingCreation"
+                 (finish)="createListing()"
+                 (next)="nextStep()"
+                 (previous)="previousStep()">
+</app-footer-step>

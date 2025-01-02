@@ -1,0 +1,18 @@
+<div class="subcategories flex flex-column align-items-center">
+  <h1>Select a subcategory for your product</h1>
+  <div class="flex flex-wrap align-items-center justify-content-center subcategory-container">
+    @for (subCategory of subCategories; track subCategory.id) {
+      <div
+        class="subcategory-card cursor-pointer p-4 m-2 border-round-lg border-200 hover:border-800 flex flex-column align-items-center"
+        [class.subcategory-selected]="selectedSubCategory() === subCategory.id"
+        (click)="onSelectSubCategory(subCategory.id)">
+        <div class="subcategory-details">
+          <h2>{{ subCategory.name }}</h2>
+        </div>
+      </div>
+    }
+  </div>
+  @if (loadingFetchAll) {
+    <p class="loading-text">Loading subcategories...</p>
+  }
+</div>

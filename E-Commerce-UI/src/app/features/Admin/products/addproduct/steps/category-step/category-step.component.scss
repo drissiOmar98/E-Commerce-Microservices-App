@@ -1,0 +1,87 @@
+/* Container styles */
+.categories {
+  text-align: center;
+  margin-top: 3rem;
+}
+
+h1 {
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 2rem;
+}
+
+/* Category Card Styles */
+.category-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+.category-card {
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  transition: all 0.3s ease-in-out;
+  padding: 20px;
+  width: 250px;
+  max-width: 100%;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  color: #333;
+  text-align: center;
+}
+
+.category-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  border-color: #007bff;
+}
+
+.category-details h2 {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #555;
+  line-height: 1.4;
+}
+
+/* Selected category style */
+.category-selected {
+  border: 2px solid #007bff;
+  background-color: #f1faff;
+  box-shadow: 0 0 8px rgba(0, 123, 255, 0.2);
+}
+
+.category-card-hover:hover {
+  background-color: #f1faff;
+}
+
+/* Loading text */
+.loading-text {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #888;
+  margin-top: 2rem;
+  font-style: italic;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+  .category-container {
+    justify-content: center;
+  }
+
+  .category-card {
+    width: 100%;
+    max-width: 280px;
+    margin-bottom: 20px;
+  }
+
+  h1 {
+    font-size: 2rem;
+  }
+}

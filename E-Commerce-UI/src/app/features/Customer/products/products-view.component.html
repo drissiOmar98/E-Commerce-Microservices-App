@@ -1,0 +1,146 @@
+<p-toast position="bottom-left"></p-toast>
+<p-breadcrumb [home]="home" [model]="items" styleClass="w-full"></p-breadcrumb>
+
+<div class="flex flex-column md:flex-row align-items-start justify-content-center mt-3">
+  <div class="bg-gray-50 border-round-md py-0 mx-0 w-full md:px-0 md:w-0 lg:w-2" *ngIf="!isLoading;else loadingFilters">
+    <app-filters (filtersObject)="applyFilters($event)" [categories]="categories"></app-filters>
+    <div class="flex flex-column align-items-center my-1 py-3">
+      <p-inputNumber class="mb-2 w-full" [(ngModel)]="rangeValues[0]" (ngModelChange)="onPriceChange($event)" mode="currency"
+        inputId="currency" currency="RSD" locale="en-US">
+      </p-inputNumber>
+      <p-inputNumber class="mb-2 w-full" [(ngModel)]="rangeValues[1]" (ngModelChange)="onPriceChange($event)" mode="currency"
+        inputId="currency" currency="RSD" locale="en-US">
+      </p-inputNumber>
+      <h5 class="font-medium mt-3 py-1 text-center">
+        Price range: {{(rangeValues[0] | number) + ' - ' + (rangeValues[1] | number)}} RSD
+      </h5>
+    </div>
+    <p-slider [(ngModel)]="rangeValues" [range]="true" [min]="lowestPrice" [max]="highestPrice" [animate]="true"
+      (onSlideEnd)="handlePriceFilter($event)" class="w-full sm:w-11/12 md:w-full"></p-slider>
+  </div>
+  <ng-template #loadingFilters>
+    <div class="bg-gray-50 border-round-md py-0 mx-0 w-full md:px-0 md:w-0 lg:w-2">
+      <p-skeleton height="3rem" width="100%" styleClass="mb-2"></p-skeleton>
+      <p-skeleton height="4rem" width="100%" styleClass="mb-2"></p-skeleton>
+      <p-skeleton height="3.5rem" width="100%" styleClass="mb-2"></p-skeleton>
+      <p-skeleton height="3.5rem" width="100%" styleClass="mb-4"></p-skeleton>
+      <p-skeleton height="2.5rem" width="100%" styleClass="mb-2"></p-skeleton>
+      <p-skeleton height="2.5rem" width="100%" styleClass="mb-3"></p-skeleton>
+      <p-skeleton width="100%" styleClass="mb-5"></p-skeleton>
+      <p-skeleton width="100%" styleClass="mb-2"></p-skeleton>
+    </div>
+  </ng-template>
+
+  <!-- Products section -->
+  <div class="w-full md:w-9 lg:w-10 mt-3 md:mt-0 md:ml-3">
+    <p-dataView [value]="products" [paginator]="true" [rows]="10" (onLazyLoad)="loadData($event)"
+      [loading]="isLoading" [rowsPerPageOptions]="[10,20,30]" paginatorPosition="bottom" layout="grid">
+      <ng-template pTemplate="header">
+        <div class="flex flex-column sm:flex-row align-items-center justify-content-between">
+          <span class="p-input-icon-left w-full sm:w-auto mb-2 sm:mb-0">
+            <i class="pi pi-search"></i>
+            <input class="w-full" type="text" pInputText (ngModelChange)="onChanges($event)"
+              [(ngModel)]="searchInput" placeholder="Search">
+          </span>
+          <div class="flex flex-column sm:flex-row w-full sm:w-auto">
+            <p-dropdown class="w-full sm:w-auto mb-2 sm:mb-0 sm:mr-2" [options]="sortOptions" [(ngModel)]="sortKey" placeholder="Sort By"
+              (onChange)="onSortChange($event)" [style]="{'min-width':'15em'}"></p-dropdown>
+            <p-dataViewLayoutOptions class="hidden sm:block"></p-dataViewLayoutOptions>
+          </div>
+
+        </div>
+      </ng-template>
+
+
+      <ng-template let-product  pTemplate="listItem">
+        @for (product of products; track product.id){
+        <div class="w-full" style="position: relative;">
+          <app-product (addedToCart)="addToCart($event)" (removedFromCart)="removeFromCart($event)"
+                       (addedToWishList)="addToWishList($event)" [isListView]="true"
+                       (removedFromWishList)="removedFromWishList($event)"
+                       [productX]="product"
+                        ></app-product>
+        </div>
+        }
+      </ng-template>
+
+      <ng-template let-product  pTemplate="gridItem">
+        @for (product of products; track product.id){
+        <div class="w-full sm:w-10 md:w-10 lg:w-2 xl:w-3 p-2" >
+          <app-product (addedToCart)="addToCart($event)" (addedToWishList)="addToWishList($event)"
+                       [isListView]="false"
+                       (removedFromWishList)="removedFromWishList($event)"
+                       [productX]="product"
+                       ></app-product>
+        </div>
+        }
+      </ng-template>
+
+
+
+
+<!--      @if (loading) {-->
+<!--        <div class="flex justify-content-center align-items-center">-->
+<!--          <fa-icon class="ml-2 text-primary" icon="circle-notch" animation="spin" size="3x"></fa-icon>-->
+<!--        </div>-->
+<!--      } @else {-->
+<!--        <div class="listing-grid">-->
+<!--          @for (product of products; track product.id) {-->
+<!--            &lt;!&ndash; List view &ndash;&gt;-->
+<!--            <ng-template  pTemplate="listItem">-->
+<!--              <div class="w-full" style="position: relative;">-->
+<!--                <app-product (addedToCart)="addToCart($event)" (removedFromCart)="removeFromCart($event)"-->
+<!--                             (addedToWishList)="addToWishList($event)" [isListView]="true" [categoryId]="product.categoryId"-->
+<!--                             [subcategoryId]="product.subcategoryId" (removedFromWishList)="removedFromWishList($event)"-->
+<!--                             [name]="product.name" [category]="product.categoryName" [subcategory]="product.subcategoryName" [id]="product.id"-->
+<!--                             [cover]="product.cover" [inStock]="product.availableQuantity" [price]="product.price"-->
+<!--                             [description]="product.description" [categoryDescription]="product.categoryDescription" ></app-product>-->
+<!--              </div>-->
+<!--            </ng-template>-->
+
+<!--            &lt;!&ndash; Grid view &ndash;&gt;-->
+<!--            <ng-template  pTemplate="gridItem">-->
+<!--              <div class="w-full sm:w-6 md:w-4 lg:w-3 xl:w-2 p-2">-->
+<!--                <app-product (addedToCart)="addToCart($event)" (addedToWishList)="addToWishList($event)"-->
+<!--                             [isListView]="false" [categoryId]="product.categoryId" [subcategoryId]="product.subcategoryId"-->
+<!--                             (removedFromWishList)="removedFromWishList($event)" [name]="product.name" [category]="product.categoryName"-->
+<!--                             [subcategory]="product.subcategoryName" [id]="product.id" [cover]="product.cover" [inStock]="product.availableQuantity"-->
+<!--                             [price]="product.price" [description]="product.description" [categoryDescription]="product.categoryDescription"></app-product>-->
+<!--              </div>-->
+<!--            </ng-template>-->
+<!--          }-->
+<!--        </div>-->
+<!--      }-->
+
+
+
+      <!-- List view -->
+<!--      <ng-template let-product pTemplate="listItem">-->
+<!--        <div class="w-full" style="position: relative;">-->
+<!--          <app-product (addedToCart)="addToCart($event)" (removedFromCart)="removeFromCart($event)"-->
+<!--            (addedToWishList)="addToWishList($event)" [isListView]="true" [categoryId]="product?.categoryId"-->
+<!--            [subcategoryId]="product?.subcategoryId" (removedFromWishList)="removedFromWishList($event)"-->
+<!--            [name]="product?.name" [category]="product?.category" [subcategory]="product?.subcategory" [id]="product?.id"-->
+<!--            [images]="product?.images" [inStock]="product?.inStock" [price]="product?.price"-->
+<!--            [description]="product?.description" [EAN]="product?.EAN"></app-product>-->
+<!--        </div>-->
+<!--      </ng-template>-->
+
+      <!-- Grid view -->
+<!--      <ng-template let-product pTemplate="gridItem">-->
+<!--        <div class="w-full sm:w-6 md:w-4 lg:w-3 xl:w-2 p-2">-->
+<!--          <app-product (addedToCart)="addToCart($event)" (addedToWishList)="addToWishList($event)"-->
+<!--            [isListView]="false" [categoryId]="product?.categoryId" [subcategoryId]="product?.subcategoryId"-->
+<!--            (removedFromWishList)="removedFromWishList($event)" [name]="product?.name" [category]="product?.category"-->
+<!--            [subcategory]="product?.subcategory" [id]="product?.id" [images]="product?.images" [inStock]="product?.inStock"-->
+<!--            [price]="product?.price" [description]="product?.description" [EAN]="product?.EAN"></app-product>-->
+<!--        </div>-->
+<!--      </ng-template>-->
+    </p-dataView>
+    <ng-template #loading2>
+      <div class="flex justify-content-center" style="padding-top: 30px">
+        <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+      </div>
+    </ng-template>
+  </div>
+</div>

@@ -1,0 +1,87 @@
+/* Container styles */
+.subcategories {
+  text-align: center;
+  margin-top: 3rem;
+}
+
+h1 {
+  font-size: 2.3rem; /* Slightly smaller than categories to indicate step difference */
+  font-weight: 600;
+  color: #444; /* Slightly darker shade */
+  margin-bottom: 2rem;
+}
+
+/* Subcategory Card Styles */
+.subcategory-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+.subcategory-card {
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0; /* Subtler border compared to categories */
+  transition: all 0.3s ease-in-out;
+  padding: 18px; /* Slightly reduced padding */
+  width: 220px; /* Slightly smaller width to distinguish subcategories */
+  max-width: 100%;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08); /* Slightly subtler shadow */
+  color: #333;
+  text-align: center;
+}
+
+.subcategory-card:hover {
+  transform: translateY(-4px); /* Slightly reduced hover effect */
+  box-shadow: 0 8px 14px rgba(0, 0, 0, 0.1);
+  border-color: #00a1ff; /* Alternate hover color */
+}
+
+.subcategory-details h2 {
+  font-size: 1.1rem; /* Slightly smaller font size */
+  font-weight: 500;
+  color: #666; /* Subtle color change */
+  line-height: 1.4;
+}
+
+/* Selected subcategory style */
+.subcategory-selected {
+  border: 2px solid #00a1ff; /* Alternate highlight color */
+  background-color: #eaf7ff; /* Lighter blue background for selected */
+  box-shadow: 0 0 8px rgba(0, 161, 255, 0.2);
+}
+
+.subcategory-card-hover:hover {
+  background-color: #f5faff; /* Lighter hover background for subcategories */
+}
+
+/* Loading text */
+.loading-text {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #777; /* Slightly lighter shade */
+  margin-top: 2rem;
+  font-style: italic;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+  .subcategory-container {
+    justify-content: center;
+  }
+
+  .subcategory-card {
+    width: 100%;
+    max-width: 260px; /* Adjusted for responsiveness */
+    margin-bottom: 20px;
+  }
+
+  h1 {
+    font-size: 2rem; /* Aligned with mobile styling */
+  }
+}

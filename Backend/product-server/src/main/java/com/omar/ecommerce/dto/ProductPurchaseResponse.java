@@ -8,5 +8,9 @@ public record ProductPurchaseResponse(
         String description,
         BigDecimal price,
         double quantity
+
 ) {
+    public double getTotalPrice() {
+        return price.doubleValue() * quantity;
+    }
 }

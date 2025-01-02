@@ -1,21 +1,30 @@
 package com.omar.ecommerce.services;
 
-import com.omar.ecommerce.dto.CustomerRequest;
-import com.omar.ecommerce.dto.CustomerResponse;
+import com.omar.ecommerce.entities.Customer;
+import org.springframework.security.oauth2.jwt.Jwt;
 
-import java.util.List;
+
+import java.util.Optional;
 
 public interface CustomerService {
 
-    public String createCustomer(CustomerRequest request);
+//    public String createCustomer(CustomerRequest request);
+//
+//    public void updateCustomer(CustomerRequest request);
+//
+//    public List<CustomerResponse> findAllCustomers();
+//
+//    public Boolean existsById(String customerId);
+//
+//    public CustomerResponse findById(String customerId);
+//
+//    public void deleteCustomer(String customerId);
 
-    public void updateCustomer(CustomerRequest request);
+    Optional<Customer> getOneByEmail(String userEmail);
 
-    public List<CustomerResponse> findAllCustomers();
+    void save(Customer user);
 
-    public Boolean existsById(String customerId);
+    public Customer getAuthenticatedCustomerWithSync(Jwt oauth2User, boolean forceResync);
 
-    public CustomerResponse findById(String customerId);
 
-    public void deleteCustomer(String customerId);
 }

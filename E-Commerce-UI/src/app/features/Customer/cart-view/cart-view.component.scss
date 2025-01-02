@@ -1,0 +1,22 @@
+.remove-btn {
+  font-size: 1rem;
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 1000;
+}
+
+::ng-deep #integeronly {
+  width: 50px !important;
+  text-align: center !important;
+}
+
+.product-price {
+  font-size: 1.5rem;
+  font-weight: 600;
+  align-self: flex-start;
+}
+
+.payment-details {
+  height: 350px;
+}

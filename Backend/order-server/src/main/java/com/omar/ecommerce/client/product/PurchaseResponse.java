@@ -1,12 +1,9 @@
 package com.omar.ecommerce.client.product;
 
-import java.math.BigDecimal;
+import java.util.List;
 
 public record PurchaseResponse(
-        Integer productId,
-        String name,
-        String description,
-        BigDecimal price,
-        double quantity
+        List<ProductPurchaseResponse> purchasedProducts,
+        double totalPrice
 ) {
 }

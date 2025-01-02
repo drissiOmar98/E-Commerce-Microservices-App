@@ -1,0 +1,39 @@
+<!--<div class="categories flex flex-column align-items-center">-->
+<!--  <h1>Select a category for your product</h1>-->
+<!--  <div class="flex flex-wrap align-items-center justify-content-center">-->
+<!--    @for (category of categories; track category.id) {-->
+<!--      <div-->
+<!--        class="category-card cursor-pointer p-4 m-2 border-round-lg border-200 hover:border-800 flex flex-column align-items-start"-->
+<!--        [class.category-selected]="selectedCategory() === category.id"-->
+<!--        (click)="onSelectCategory(category.id)"-->
+<!--      >-->
+<!--        <div class="category-details">-->
+<!--          <h2 class="mb-2">{{ category.name }}</h2>-->
+<!--        </div>-->
+<!--      </div>-->
+<!--    }-->
+<!--  </div>-->
+<!--  @if (loadingFetchAll) {-->
+<!--    <p class="loading-text">Loading categories...</p>-->
+<!--  }-->
+<!--</div>-->
+<div class="categories flex flex-column align-items-center">
+  <h1>Select a category for your product</h1>
+  <div class="flex flex-wrap align-items-center justify-content-center category-container">
+    @for (category of categories; track category.id) {
+      <div
+        class="category-card cursor-pointer p-4 m-2 border-round-lg border-200 hover:border-800 flex flex-column align-items-center category-card-hover"
+        [class.category-selected]="selectedCategory() === category.id"
+        (click)="onSelectCategory(category.id)"
+      >
+        <div class="category-details">
+          <h2>{{ category.name }}</h2>
+        </div>
+      </div>
+    }
+  </div>
+  @if (loadingFetchAll) {
+    <p class="loading-text">Loading categories...</p>
+  }
+</div>
+

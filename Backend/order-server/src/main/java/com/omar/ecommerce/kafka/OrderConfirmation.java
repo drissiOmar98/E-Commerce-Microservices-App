@@ -1,7 +1,7 @@
 package com.omar.ecommerce.kafka;
 
 import com.omar.ecommerce.client.customer.CustomerResponse;
-import com.omar.ecommerce.client.product.PurchaseResponse;
+import com.omar.ecommerce.client.product.ProductPurchaseResponse;
 import com.omar.ecommerce.entities.PaymentMethod;
 
 import java.math.BigDecimal;
@@ -12,6 +12,6 @@ public record OrderConfirmation(
         BigDecimal totalAmount,
         PaymentMethod paymentMethod,
         CustomerResponse customer,
-        List<PurchaseResponse> products
+        List<ProductPurchaseResponse> products
 ) {
 }

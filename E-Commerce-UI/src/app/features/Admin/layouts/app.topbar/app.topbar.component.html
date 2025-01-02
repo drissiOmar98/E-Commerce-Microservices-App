@@ -1,0 +1,30 @@
+<div class="layout-topbar">
+  <a class="layout-topbar-logo" routerLink="">
+    <i [ngClass]="['pi', 'pi-shop']" style="font-size: 2rem; color: black"></i>
+    <span style="padding: 10px; font-size: large">ES-Admin</span>
+  </a>
+
+  <button
+    #menubutton
+    class="p-link layout-menu-button layout-topbar-button"
+    (click)="layoutService.onMenuToggle(); $event.stopPropagation()"
+  >
+    <i class="pi pi-bars"></i>
+  </button>
+
+  <div #topbarmenu class="layout-topbar-menu">
+    <div
+      class="flex align-items-center gap-2"
+      style="display: flex; flex-direction: row; align-items: center"
+    >
+      <div style="padding: 10px">
+        <span>{{user?.email}}</span>
+      </div>
+      <p-avatar
+        icon="pi pi-user"
+        shape="circle"
+        size="large"
+      />
+    </div>
+  </div>
+</div>

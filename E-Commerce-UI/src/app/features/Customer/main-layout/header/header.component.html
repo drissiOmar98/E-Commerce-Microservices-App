@@ -1,0 +1,55 @@
+<div class="header mb-3 flex align-items-center justify-content-between">
+  <button #btn class="p-link lg:hidden" (click)="menu.toggle($event)">
+    <i class="pi pi-bars text-2xl text-white"></i>
+  </button>
+
+  <p-slideMenu #menu [model]="items" [popup]="true" [viewportHeight]="250"></p-slideMenu>
+
+  <span  [routerLink]="['/customer/home']" class="font-bold text-xl cursor-pointer text-white pr-0 flex-grow-1 text-center">Shoply
+    <i class="pi pi-shopping-bag ml-2" style="font-size: 1.5rem"></i>
+  </span>
+
+  <a [routerLink]="['/customer/cart']" class="p-link lg:hidden">
+    <i class="pi pi-shopping-cart text-2xl text-white" *ngIf="cartItems !== '0'" pBadge [value]="cartItems"></i>
+    <i class="pi pi-shopping-cart text-2xl text-white" *ngIf="cartItems === '0'"></i>
+  </a>
+
+  <ul class="hidden lg:flex align-items-center list-none p-0 m-0 flex-grow-1">
+    <li><a [routerLink]="['/customer/home']" routerLinkActive="text-primary" class="p-2 no-underline text-white"><i class="pi pi-home mr-2" ></i> Home</a></li>
+    <li><a [routerLink]="['/customer/products/search']" routerLinkActive="text-primary"
+        class="p-2 no-underline text-white"><i class="pi pi-box mr-2"></i>  Products</a></li>
+    <li><a [routerLink]="['/customer/products/categories']" routerLinkActive="text-primary"
+        class="p-2 no-underline text-white"><i class="pi pi-th-large mr-2" ></i> Categories</a></li>
+    <li><a [routerLink]="['/customer/wishlist']" routerLinkActive="text-primary" class="p-2 no-underline text-white">
+        <i class="pi pi-heart mr-2" *ngIf="wishListItems !== '0'" pBadge [value]="wishListItems"></i>
+        <i class="pi pi-heart mr-2" *ngIf="wishListItems === '0'"></i>
+        Wishlist
+      </a></li>
+    <li><a [routerLink]="['/customer/cart']" routerLinkActive="text-primary" class="p-2 no-underline text-white">
+        <i class="pi pi-shopping-cart mr-2" *ngIf="cartItems !== '0'" pBadge [value]="cartItems"></i>
+        <i class="pi pi-shopping-cart mr-2" *ngIf="cartItems === '0'"></i>
+        Cart
+      </a></li>
+  </ul>
+
+  <!-- Notification Dropdown -->
+  <div >
+    <button pButton type="button"  class="p-button-rounded p-button-text text-white"
+            (click)="notificationMenu.toggle($event)">
+      <i class="pi pi-bell text-2xl"></i>
+      <i *ngIf="notifications.length" class="pi pi-badge" pBadge [value]="notifications.length"></i>
+    </button>
+    <p-menu #notificationMenu [model]="notificationItems" [popup]="true"></p-menu>
+  </div>
+
+  <!-- Profile Dropdown -->
+  <div>
+    <button pButton type="button" label="Profile" icon="pi pi-user" class="p-button-rounded p-button-text text-white"
+            (click)="profileMenu.toggle($event)"></button>
+    <p-menu #profileMenu [model]="profileItems" [popup]="true"></p-menu>
+  </div>
+
+
+
+
+</div>

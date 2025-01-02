@@ -1,0 +1,128 @@
+<p-toast position="bottom-left"></p-toast>
+<p-breadcrumb [home]="home" [model]="items" class="mb-3"></p-breadcrumb>
+
+<div *ngIf="myProduct; else loading">
+    <div class="flex flex-column lg:flex-row justify-content-center gap-3">
+        <div class="flex flex-column lg:flex-row gap-3">
+          <div class="w-full lg:w-6">
+            <p-galleria [value]="myProduct?.pictures"
+                        [(activeIndex)]="activeIndex"
+                        [containerStyle]="{'width': '100%'}"
+                        [showThumbnails]="false"
+                        [showIndicators]="false"
+                        class="custom-galleria p-2">
+              <ng-template pTemplate="item" let-item>
+                <div class="product-gallery-container">
+                  <div class="thumbnails-wrapper">
+                    <div class="thumbnails-container">
+                      @for (picture of myProduct.pictures; track picture.file; let index = $index){
+                        <div class="thumbnail-item"
+                             [ngClass]="{'active': activeIndex === index}"
+                             (click)="imageClick(index)"
+                             [class.cover]="picture.isCover">
+                          <img [src]="'data:' + picture.fileContentType + ';base64,' + picture.file"
+                               class="w-full h-auto border-round"
+                               [alt]="picture.file">
+                        </div>
+                      }
+                    </div>
+                  </div>
+
+                  <div class="main-image-wrapper">
+                    <p-image [src]="'data:' + item.fileContentType + ';base64,' + item.file"
+                             [preview]="true"
+                             imageClass="w-full h-auto max-w-full border-round"
+                             [style]="{'max-height': '450px'}">
+                    </p-image>
+                  </div>
+                </div>
+              </ng-template>
+            </p-galleria>
+          </div>
+
+
+          <div
+                    class="fadein animation-duration-300 relative border-300 border-1 border-round-xl surface-overlay mt-5 mb-5 flex flex-column align-items-center justify-content-around lg:w-auto pt-4 pb-4"
+                    *ngIf="product" style="max-width: 450px;">
+                <p-tag class="m-1 tag" severity="danger" value="Excellent price" [rounded]="true"></p-tag>
+                <i class="favorite" (click)="addProductToWishList(product)"
+                   [class]="inWishlist ? 'pi pi-heart-fill wishlist' : 'pi pi-heart'"></i>
+                <div class="align-self-start m-2 mt-5 px-2 flex flex-column">
+                    <h2 class="font-bold">
+                        {{ myProduct.name }}
+                    </h2>
+                    <span class="align-self-start font-light text-green-400 text-sm"
+                          *ngIf="myProduct.availableQuantity > 0; else notAvailable">Available</span>
+                    <ng-template #notAvailable="">
+                        <span class="align-self-start font-light text-red-400 text-sm">Unavailable at the moment</span>
+                    </ng-template>
+                    <span class="font-light">
+          EAN: 123
+        </span>
+                    <span class="font-light align-self-start">
+          {{ myProduct?.subcategoryName }}
+        </span>
+                </div>
+                <span class="align-self-start mx-2 px-2 py-2">
+        {{ myProduct.description }}
+      </span>
+                <div
+                        class="flex align-content-center justify-content-between flex-column w-full sm:flex-row sm:justify-content-start gap-3">
+                    <div class="flex align-content-center justify-content-between flex-column w-full sm:w-auto">
+                      <span class="product-price px-2 mx-2">
+                         {{ myProduct.price | number }}&nbsp;<fa-icon icon="dollar-sign" class="dollar"></fa-icon>
+                      </span>
+                      <span class="font-medium align-self-start px-2 mx-2">
+                         or monthly payment {{ selectedMonthlyPayment.name }} x {{getInstallmentPayAmount(myProduct.price, selectedMonthlyPayment.name)
+                        | number }}&nbsp;<fa-icon icon="dollar-sign" class="dollar"></fa-icon>
+                      </span>
+                    </div>
+                    <p-dropdown pTooltip="Select monthly payment" placeholder="12" tooltipEvent="focus"
+                                [options]="monthlyPaymentOptions" [(ngModel)]="selectedMonthlyPayment"
+                                optionLabel="name"
+                                class="align-self-end"></p-dropdown>
+                </div>
+                <button (click)="buyProduct(myProduct)" class="p-button-outlined p-button-rounded w-full sm:w-10 mt-2 p-2"
+                        type="button" pButton pRipple label="Buy now" [disabled]="myProduct.availableQuantity === 0"></button>
+                <span class="text-blue-400 underline cursor-pointer mt-2" *ngIf="myProduct.availableQuantity === 0">Notify when
+        available</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<ng-template #loading="">
+    <div class="center" style="padding-top: 30px">
+        <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+    </div>
+</ng-template>
+
+<!--&lt;!&ndash; Suggested products &ndash;&gt;-->
+<!--<p-carousel *ngIf="suggestedProducts" [value]="suggestedProducts" [numVisible]="3" [numScroll]="1"-->
+<!--            [circular]="false"-->
+<!--            [responsiveOptions]="carouselResponsiveOptions" styleClass="w-full mt-4">-->
+<!--    <ng-template pTemplate="header">-->
+<!--        <h2 class="text-center">Suggested products from category {{ product.category?.name }}</h2>-->
+<!--    </ng-template>-->
+<!--    <ng-template let-product pTemplate="item">-->
+<!--        <div class="flex align-items-center justify-content-center">-->
+<!--            <app-product class="mt-2 mb-2 w-full sm:w-auto"-->
+<!--                         (addedToCart)="addToCart($event)"-->
+<!--                         (replaceCurrentProduct)="replaceProduct($event)"-->
+<!--                         (removedFromCart)="removeFromCart($event)"-->
+<!--                         (removedFromWishList)="removedFromWishList($event)"-->
+<!--                         (addedToWishList)="addToWishList($event)"-->
+<!--                         [name]="product.name"-->
+<!--                         [subcategory]="product.subcategory.name"-->
+<!--                         [id]="product.id"-->
+<!--                         [images]="product.images"-->
+<!--                         [inStock]="product.inStock"-->
+<!--                         [price]="product.price"-->
+<!--                         [category]="product.category"-->
+<!--                         [description]="product.description"-->
+<!--                         >-->
+<!--            </app-product>-->
+<!--        </div>-->
+<!--    </ng-template>-->
+<!--</p-carousel>-->
+

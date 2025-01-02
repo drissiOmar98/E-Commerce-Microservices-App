@@ -1,0 +1,131 @@
+<div class="grid">
+  <div class="col-12">
+    <div class="card">
+      <h5>Categories</h5>
+<!--      <p-dataView #dv [value]="" [paginator]="true" [rows]="9" filterBy="name" [sortField]="sortField" [sortOrder]="sortOrder" layout="grid">-->
+      <p-dataView  [value]="categories" [paginator]="true" [rows]="9" filterBy="name" [sortField]="sortField" [sortOrder]="sortOrder" layout="grid" >
+        <ng-template pTemplate="header">
+          <div class="flex flex-column md:flex-row md:justify-content-between gap-2">
+            <p-dropdown [options]="sortOptions" placeholder="Sort By Price" (onChange)="onSortChange($event)"></p-dropdown>
+            <span class="p-input-icon-left">
+                            <i class="pi pi-search"></i>
+<!--                            <input type="search" pInputText placeholder="Search by Name" (input)="onFilter(dv, $event)">-->
+                           <input type="search" pInputText placeholder="Search by Name">
+                        </span>
+            <p-dataViewLayoutOptions></p-dataViewLayoutOptions>
+          </div>
+        </ng-template>
+
+        <ng-template let-products pTemplate="listItem">
+          @for (category of categories; track category.id){
+            <div class="col-12">
+              <div class="flex flex-column md:flex-row align-items-center p-3 w-full">
+                <img src="./assets/images/category.jpg" [alt]="category.name" class="my-4 md:my-0 w-9 md:w-10rem shadow-2 mr-5"/>
+                <div class="flex-1 flex flex-column align-items-center text-center md:text-left">
+                  <div class="flex align-items-center mt-2">
+                    <i class="pi pi-tag mr-2"></i>
+                    <span class="font-bold text-2xl">{{category.name}}</span>
+                  </div>
+                  <div class="mb-2">{{category.description}}</div>
+                </div>
+
+                <div>
+                  <!-- Button to Show or Hide Subcategories for the Selected Category -->
+                  <button class="p-button p-component p-button-text" (click)="fetchSubCategories(category.id)">
+                    {{ subcategoriesVisible[category.id] ? 'Hide Subcategories' : 'Show Subcategories' }}
+                  </button>
+                  <br>
+                  <br>
+
+                  <!-- Display Subcategories if Subcategories Exist and Visibility is True for the selected category -->
+                  @if(subcategoriesVisible[category.id]) {
+                    <div class="subcategories-list align-items-center">
+                      @for (subcategory of subCategories[category.id] || []; track subcategory.id) {
+                        <span class="p-badge p-component" style="margin-right: 8px;">{{subcategory.name}}</span>
+                      }
+                    </div>
+                  }
+                </div>
+
+              </div>
+            </div>
+
+          }
+
+        </ng-template>
+
+        <ng-template let-products pTemplate="gridItem">
+          <div class="grid grid-nogutter justify-content-center">
+            @for (category of categories; track category.id) {
+              <div class="col-12 md:col-4">
+                <div class="card m-3 border-1 surface-border" >
+                  <div class="flex flex-column align-items-center text-center mb-3" style="height: 100%;">
+                    <!-- Image: Added bottom margin to create space from the text -->
+                    <img
+                      src="./assets/images/category.jpg"
+                      [alt]="category.name"
+                      class="my-4 md:my-0 w-9 md:w-10rem shadow-2 mb-4" />
+                    <br>
+
+                    <!-- Category name and icon: Added margin on top for spacing -->
+                    <div class="flex justify-content-center align-items-center mb-3">
+                      <i class="pi pi-tag mr-2"></i>
+                      <span class="text-2xl font-bold">{{category.name}}</span>
+                    </div>
+
+                    <!-- Description: The margin will ensure space from the text above -->
+                    <div class="mb-3 text-center" style="flex-grow: 1; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3;">
+                      {{category.description}}
+                    </div>
+
+<!--                    &lt;!&ndash; Button to Show Subcategories &ndash;&gt;-->
+<!--                    <button class="p-button p-component p-button-text" (click)="fetchSubCategories(category.id)">-->
+<!--                      Show Subcategories-->
+<!--                    </button>-->
+<!--                    <br>-->
+
+<!--                    &lt;!&ndash; Display Subcategories if Subcategories Exist &ndash;&gt;-->
+<!--                    @if(selectedCategoryId===category.id){-->
+<!--                      <div class="subcategories-list">-->
+<!--                        <h6>Subcategories for {{category.name}}:</h6>-->
+<!--                        @for (subcategory of subCategories; track subcategory.id)  {-->
+<!--                          <li>-->
+<!--                            <span class="p-badge p-component">{{subcategory.name}}</span>-->
+<!--                          </li>-->
+<!--                        }-->
+<!--                      </div>-->
+<!--                    }-->
+                    <!-- Button to Show or Hide Subcategories -->
+                    <div>
+                      <!-- Button to Show or Hide Subcategories for the Selected Category -->
+                      
+                      <button class="p-button p-button-primary p-button-rounded" (click)="fetchSubCategories(category.id)">
+                        <i class="pi mr-2" [class.pi-plus]="!subcategoriesVisible[category.id]" [class.pi-minus]="subcategoriesVisible[category.id]"></i>
+                        {{ subcategoriesVisible[category.id] ? 'Hide Subcategories' : 'Show Subcategories' }}
+                      </button>
+                      <br><br>
+
+                      <!-- Display Subcategories if Subcategories Exist and Visibility is True for the selected category -->
+                      @if(subcategoriesVisible[category.id]) {
+                        <div class="subcategories-list align-items-center">
+                          @for (subcategory of subCategories[category.id] || []; track subcategory.id) {
+                              <span class="p-badge p-component" style="margin-right: 8px;">{{subcategory.name}}</span>
+                          }
+                        </div>
+                      }
+                    </div>
+
+
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </ng-template>
+
+
+
+      </p-dataView>
+    </div>
+  </div>
+</div>

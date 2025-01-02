@@ -1,0 +1,88 @@
+//.placeholder-validation {
+//  height: 21px;
+//}
+
+/* Form Container */
+.form-container {
+  max-width: 700px;
+  margin: 3rem auto;
+  padding: 2rem;
+  background: #ffffff; /* Clean white background */
+  border: 1px solid #ddd; /* Subtle border */
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+}
+
+/* Form Header */
+.form-header {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+/* Form Content */
+.form-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem; /* Consistent spacing between elements */
+}
+
+/* Input Group */
+.form-group {
+  position: relative;
+}
+
+/* Inputs (Shared styles) */
+.form-input {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Title Input */
+.title-input {
+  font-weight: 500;
+}
+
+/* Description Input */
+.description-input {
+  resize: none; /* Disable resizing */
+  line-height: 1.5;
+}
+
+/* Focus styles */
+.form-input:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+}
+
+/* Placeholder Validation (For consistent spacing) */
+.placeholder-validation {
+  height: 21px;
+}
+
+/* Error Message */
+.error-message {
+  color: #dc3545; /* Red error text */
+  font-size: 0.875rem;
+  margin-top: 5px;
+  font-weight: 500;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+  .form-container {
+    padding: 1.5rem;
+  }
+
+  .form-header {
+    font-size: 1.5rem;
+  }
+}

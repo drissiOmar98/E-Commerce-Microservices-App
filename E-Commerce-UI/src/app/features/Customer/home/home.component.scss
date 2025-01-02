@@ -1,0 +1,40 @@
+.carousel-container {
+  width: 100%;
+  max-width: 100%;
+}
+
+.carousel-header {
+  text-align: center;
+  font-weight: 300;
+  margin: 1rem;
+  padding-bottom: 1rem;
+}
+
+.carousel-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+@media (max-width: 768px) {
+  .carousel-header {
+    margin: 0;
+    padding: 0;
+  }
+
+  .carousel-item {
+    padding: 0;
+  }
+}
+
+@media (min-width: 769px) {
+  .carousel-header {
+    margin: 2rem;
+    padding-bottom: 2rem;
+  }
+
+  .carousel-item {
+    padding: 1rem;
+  }
+}

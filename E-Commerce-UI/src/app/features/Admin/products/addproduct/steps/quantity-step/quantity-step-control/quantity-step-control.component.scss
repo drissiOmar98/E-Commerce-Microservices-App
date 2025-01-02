@@ -1,0 +1,68 @@
+/* Center text and improve title design */
+.title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  flex-grow: 1;
+}
+
+/* Style the control section */
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px; /* More space between controls */
+}
+
+/* Style for the value display */
+.value {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;  /* Ensures enough space for value text */
+  width: 40px;  /* Adjust to get a slightly wider space */
+  font-size: 16px;
+  font-weight: bold;
+  color: #000;
+  border-radius: 5px;
+  background-color: #f3f4f6;
+  padding: 10px;
+  text-align: center;
+  transition: background-color 0.3s ease-in-out;
+}
+
+/* Make sure the buttons look neat */
+button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 15px;
+  background-color: #f7f7f7;
+  border-radius: 50%;
+  color: #555;
+}
+
+button.p-disabled {
+  opacity: 0.5;
+}
+
+/* Add hover effect to buttons */
+button:hover:not([disabled]) {
+  background-color: #e4e4e4;
+}
+
+button:focus-visible {
+  outline: none;
+}
+
+/* Handle separator style */
+.border-top-1 {
+  border-top: 1px solid #e4e4e4;
+  margin-top: 20px;
+}
+
+/* Spacing for button icons */
+button fa-icon {
+  font-size: 20px;
+  color: #555;
+}

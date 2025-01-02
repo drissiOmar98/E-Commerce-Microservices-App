@@ -1,0 +1,27 @@
+<!-- <app-menu></app-menu> -->
+
+<!-- <p-menu [model]="model">
+  <ng-template pTemplate="item" let-item>
+    <ng-container *ngIf="item.route; else elseBlock">
+      <a [routerLink]="item.route" class="p-menuitem-link">
+        <span [class]="item.icon"></span>
+        <span class="ml-2">{{ item.label }}</span>
+      </a>
+    </ng-container>
+    <ng-template #elseBlock>
+      <a [href]="item.url" class="p-menuitem-link">
+        <span [class]="item.icon"></span>
+        <span class="ml-2">{{ item.label }}</span>
+      </a>
+    </ng-template>
+  </ng-template>
+</p-menu> -->
+
+<ul class="layout-menu">
+  <ng-container *ngFor="let item of model; let i = index">
+    <app-menuitem [item]="item" [index]="i" [root]="true"></app-menuitem>
+  </ng-container>
+</ul>
+
+<!-- <h1>sidebar</h1> -->
+

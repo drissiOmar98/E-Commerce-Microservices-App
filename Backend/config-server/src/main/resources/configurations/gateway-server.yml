@@ -1,3 +1,6 @@
+eureka:
+  client:
+    register-with-eureka: false
 server:
   port: 8222
 spring:
@@ -7,22 +10,40 @@ spring:
         locator:
           enabled: true
       routes:
+#        - id: customer-server
+#          uri: lb:http://CUSTOMER-SERVER
+#          predicates:
+#            - Path=/api/v1/customers/**
         - id: customer-server
-          uri: lb:http://CUSTOMER-SERVER
+          uri: http://localhost:8090
           predicates:
-            - Path=/api/v1/customers/**
+            - Path=/api/users/**
+
         - id: order-server
           uri: lb:http://ORDER-SERVER
           predicates:
             - Path=/api/v1/orders/**
+
         - id: order-lines-server
           uri: lb:http://ORDER-SERVER
           predicates:
             - Path=/api/v1/order-lines/**
+
         - id: product-server
           uri: lb:http://PRODUCT-SERVER
           predicates:
             - Path=/api/v1/products/**
+
+        - id: category-server
+          uri: lb:http://PRODUCT-SERVER
+          predicates:
+            - Path=/api/v1/categories/**
+
+        - id: subcategory-server
+          uri: lb:http://PRODUCT-SERVER
+          predicates:
+            - Path=/api/v1/subcategories/**
+
         - id: payment-server
           uri: lb:http://PAYMENT-SERVER
           predicates:

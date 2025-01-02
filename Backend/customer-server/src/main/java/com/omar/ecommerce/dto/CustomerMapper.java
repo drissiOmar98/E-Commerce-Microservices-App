@@ -2,7 +2,7 @@ package com.omar.ecommerce.dto;
 
 import com.omar.ecommerce.entities.Customer;
 import org.springframework.stereotype.Component;
-
+/*
 @Component
 public class CustomerMapper {
 
@@ -25,10 +25,11 @@ public class CustomerMapper {
         }
         return new CustomerResponse(
                 customer.getId(),
-                customer.getFirstname(),
-                customer.getLastname(),
+                customer.getFirstName(),
+                customer.getLastName(),
                 customer.getEmail(),
                 customer.getAddress()
         );
     }
 }
+*/

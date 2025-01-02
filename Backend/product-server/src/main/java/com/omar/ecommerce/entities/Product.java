@@ -1,20 +1,20 @@
 package com.omar.ecommerce.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import com.omar.ecommerce.common.AbstractAuditingEntity;
+import jakarta.persistence.*;
 import lombok.*;
-import jakarta.persistence.Id;
+
 import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.Set;
 
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 @Getter
 @Setter
 @Entity
-public class Product {
+@Builder
+public class Product extends AbstractAuditingEntity {
 
     @Id
     @GeneratedValue
@@ -26,5 +26,12 @@ public class Product {
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.REMOVE)
+    private Set<ProductPicture> pictures = new HashSet<>();
+
+    @ManyToOne
+    @JoinColumn(name = "subcategory_id", nullable = false)
+    private Subcategory subcategory;
 
 }

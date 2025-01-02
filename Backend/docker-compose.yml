@@ -1,7 +1,7 @@
 services:
   postgresql:
     container_name: ms_pg_sql
-    image: postgres
+    image: postgres:16
     environment:
       POSTGRES_USER: omar
       POSTGRES_PASSWORD: omar
@@ -75,16 +75,16 @@ services:
       - microservices-net
 
 
-  prometheus:
-    container_name: prometheus
-    image: prom/prometheus
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-    ports:
-      - "9090:9090"
-    networks:
-      - microservices-net
-    restart: unless-stopped
+#  prometheus:
+#    container_name: prometheus
+#    image: prom/prometheus
+#    volumes:
+#      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+#    ports:
+#      - "9090:9090"
+#    networks:
+#      - microservices-net
+#    restart: unless-stopped
 
   kafka:
     image: confluentinc/cp-kafka:latest
@@ -109,6 +109,8 @@ services:
     image: quay.io/keycloak/keycloak:24.0.2
     ports:
       - 9098:8080
+    volumes:
+      - ./keycloak-realm-config:/opt/keycloak/data/import
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
@@ -116,6 +118,7 @@ services:
       - microservices-net
     command:
       - "start-dev"
+      - "--import-realm"
 
 
   mail-dev:

@@ -6,6 +6,9 @@ spring:
     url: jdbc:postgresql://localhost:5432/product
     username: omar
     password: omar
+    hikari:
+      poolName: Hikari
+      auto-commit: false
   jpa:
     hibernate:
       ddl-auto: validate
@@ -18,3 +21,8 @@ spring:
     baseline-version: 0
     user: ${spring.datasource.username}
     password: ${spring.datasource.password}
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 100MB
+      max-request-size: 100MB

@@ -12,10 +12,10 @@ import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 @Getter
 @Setter
 @Entity
+@Builder
 public class Category {
     @Id
     @GeneratedValue
@@ -25,4 +25,8 @@ public class Category {
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.REMOVE)
     private List<Product> products;
+
+
+    @OneToMany(mappedBy = "category", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Subcategory> subcategories;
 }
