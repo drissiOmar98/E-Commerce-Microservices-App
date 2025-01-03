@@ -48,3 +48,8 @@ spring:
           uri: lb:http://PAYMENT-SERVER
           predicates:
             - Path=/api/v1/payments/**
+
+        - id: cart-service
+          uri: lb:http://CART-SERVICE
+          predicates:
+            - Path=/api/v1/cart/**

@@ -189,5 +189,10 @@ public class ProductController {
         }
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<DisplayCardProductDTO> getProductDetailsById(@PathVariable Integer id) {
+        DisplayCardProductDTO productDetails = productService.getProductDetailsWithCover(id);
+        return ResponseEntity.ok(productDetails);
+    }
 
 }

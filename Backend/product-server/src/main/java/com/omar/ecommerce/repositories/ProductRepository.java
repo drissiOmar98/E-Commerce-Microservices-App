@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -40,6 +41,9 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     @Query("SELECT product from Product product LEFT JOIN FETCH product.pictures picture" +
             " WHERE picture.isCover = true")
     Page<Product> findAllWithCoverOnly(Pageable pageable);
+
+    @Query("SELECT p FROM Product p LEFT JOIN FETCH p.pictures pictures WHERE p.id = :id AND pictures.isCover = true")
+    Optional<Product> findProductWithCoverOnly(@Param("id") Integer id);
 
 
     @Query("SELECT product from Product product LEFT JOIN FETCH product.pictures picture" +

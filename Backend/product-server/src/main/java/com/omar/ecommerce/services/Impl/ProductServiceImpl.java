@@ -5,6 +5,7 @@ import com.omar.ecommerce.dto.*;
 
 
 import com.omar.ecommerce.entities.Product;
+import com.omar.ecommerce.exception.ProductNotFoundException;
 import com.omar.ecommerce.exception.ProductPurchaseException;
 import com.omar.ecommerce.mapper.ProductMapper;
 import com.omar.ecommerce.repositories.ProductRepository;
@@ -178,6 +179,13 @@ public class ProductServiceImpl implements ProductService {
     public Page<DisplayCardProductDTO> filterProductsByPriceRange(Pageable pageable, BigDecimal minPrice, BigDecimal maxPrice) {
         Page<Product> products = productRepository.findProductsByPriceRange(pageable, minPrice, maxPrice);
         return products.map(productMapper::productToDisplayCardProductDTO);
+    }
+
+    @Override
+    public DisplayCardProductDTO getProductDetailsWithCover(Integer productId) {
+        Product product = productRepository.findProductWithCoverOnly(productId)
+                .orElseThrow(() -> new ProductNotFoundException("Product not found with ID: " + productId));
+        return productMapper.productToDisplayCardProductDTO(product);
     }
 
 //    @Override

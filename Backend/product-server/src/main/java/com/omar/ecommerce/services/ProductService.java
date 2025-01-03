@@ -36,4 +36,6 @@ public interface ProductService {
             List<String> subcategoryNames);
 
     public Page<DisplayCardProductDTO> filterProductsByPriceRange(Pageable pageable, BigDecimal minPrice, BigDecimal maxPrice);
+
+    DisplayCardProductDTO getProductDetailsWithCover(Integer productId);
 }
