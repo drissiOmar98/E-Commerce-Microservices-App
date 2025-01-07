@@ -17,6 +17,7 @@ public class CartItemDTO {
     private Integer productId;  // Product ID from the Product Service
     private double quantity;
     private String productName;  // Populated from the Product Service
+    private double availableQuantity;
     private PictureDTO cover;  // Populated from the Product Service
     private BigDecimal price;  // Price from the Product Service
     private double totalPrice;

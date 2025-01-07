@@ -126,8 +126,12 @@
         <span class="text-xs sm:text-sm text-red-500 block mb-2 text-center">Not available</span>
       </ng-template>
       <div class="text-center">
-        <p-button (click)="addRemoveCartItem(product)" [disabled]="productX().availableQuantity === 0" icon="pi pi-cart-plus"
-                  [styleClass]="inCart ? 'p-button-rounded p-button-primary' : 'p-button-rounded p-button-outlined'"></p-button>
+        <p-button
+          (click)="addRemoveCartItem(productX())"
+          [disabled]="productX().availableQuantity === 0"
+          icon="pi pi-cart-plus"
+          [styleClass]="getButtonClass(productX().id)">
+        </p-button>
       </div>
     </div>
   </div>
@@ -169,10 +173,10 @@
             <span class="text-sm">or 12 x {{ getInstallmentPayAmount(price) | number }} RSD / month</span>
           </div>
 
-          <p-button (click)="productX().availableQuantity > 0 && addRemoveCartItem(product)"
+          <p-button (click)="productX().availableQuantity > 0 && addRemoveCartItem(productX())"
                     [disabled]="productX().availableQuantity === 0"
                     icon="pi pi-cart-plus"
-                    [styleClass]="productX().availableQuantity === 0 ? 'p-button-rounded p-button-outlined p-button-secondary' : (inCart ? 'p-button-rounded p-button-primary' : 'p-button-rounded p-button-outlined')"
+                    [styleClass]="getButtonClass(productX().id)"
                     class="align-self-end">
           </p-button>
         </div>

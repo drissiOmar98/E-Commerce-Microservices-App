@@ -16,6 +16,7 @@ public interface CartItemMapper {
     @Mapping(target = "productName", source = "productId", qualifiedByName = "fetchProductName")
     @Mapping(target = "cover", source = "productId", qualifiedByName = "fetchProductCover")
     @Mapping(target = "price", source = "productId", qualifiedByName = "fetchProductPrice")
+    @Mapping(target = "availableQuantity", source = "productId", qualifiedByName = "fetchProductStockQuantity")
     @Mapping(target = "totalPrice", source = "cartItem", qualifiedByName = "calculateTotalPrice")
     CartItemDTO toCartItemDTO(CartItem cartItem);
 

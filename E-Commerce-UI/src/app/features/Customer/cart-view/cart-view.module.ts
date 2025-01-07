@@ -19,6 +19,7 @@ import {StepsModule} from "primeng/steps";
 import {DropdownModule} from "primeng/dropdown";
 import {BreadcrumbModule} from "primeng/breadcrumb";
 import {MessageService} from "primeng/api";
+import {FaIconComponent} from "@fortawesome/angular-fontawesome";
 
 
 @NgModule({
@@ -29,22 +30,23 @@ import {MessageService} from "primeng/api";
     PaymentComponent,
     ShippingComponent
   ],
-  imports: [
-    CommonModule,
-    CartViewRoutingModule,
-    Button,
-    InputNumberModule,
-    FormsModule,
-    DividerModule,
-    CardModule,
-    RadioButtonModule,
-    CheckboxModule,
-    ButtonDirective,
-    ToastModule,
-    StepsModule,
-    DropdownModule,
-    BreadcrumbModule,
-  ],
+    imports: [
+        CommonModule,
+        CartViewRoutingModule,
+        Button,
+        InputNumberModule,
+        FormsModule,
+        DividerModule,
+        CardModule,
+        RadioButtonModule,
+        CheckboxModule,
+        ButtonDirective,
+        ToastModule,
+        StepsModule,
+        DropdownModule,
+        BreadcrumbModule,
+        FaIconComponent,
+    ],
   providers: [MessageService]
 })
 export class CartViewModule { }

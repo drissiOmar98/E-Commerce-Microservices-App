@@ -6,12 +6,16 @@ import { SubscriptionContainer } from './SubscriptionContainer';
 import { MessageService } from 'primeng/api';
 import { MenuItem } from 'primeng/api';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CartService } from 'src/app/shared/cart.service';
+
 import {WishlistService} from "../../../shared/wishlist.service";
 import {ToastService} from "../../Admin/services/toast.service";
 import {ProductService} from "../../Admin/services/product.service";
-import {CardProduct} from "../../Admin/model/product.model";
+import {CardProduct, CreatedProduct, NewProduct} from "../../Admin/model/product.model";
 import {Pagination} from "../../../shared/model/request.model";
+import {CartService} from "../services/cart.service";
+import {State} from "../../../shared/model/state.model";
+import {Cart, CartItemRequest} from "../model/cart.model";
+import {NewProductPicture} from "../../Admin/model/picture.model";
 
 
 @Component({
@@ -22,6 +26,7 @@ import {Pagination} from "../../../shared/model/request.model";
 export class ProductsViewComponent implements OnInit, OnDestroy {
 
   toastService = inject(ToastService);
+  cartService= inject(CartService);
   productService= inject(ProductService);
   activatedRoute = inject(ActivatedRoute);
   router = inject(Router);
@@ -29,6 +34,16 @@ export class ProductsViewComponent implements OnInit, OnDestroy {
   pageRequest: Pagination = {size: 20, page: 0, sort: []};
   loading = false;
   emptySearch = false;
+  loadingCreation = false;
+
+  newItemForMyCart: CartItemRequest = this.initializeNewItemToMyCart();
+
+  initializeNewItemToMyCart() : CartItemRequest {
+    return {
+      productId: null!,
+      quantity: 0
+    };
+  }
 
 
 
@@ -65,9 +80,11 @@ export class ProductsViewComponent implements OnInit, OnDestroy {
     private _productService: ProductsService,
     private _messageService: MessageService,
     private _wishlistService: WishlistService,
-    private _cartService: CartService,
+    //private _cartService: CartService,
   ) {
     this.listenToGetAllByCategory();
+    this.listenCartItemAddition();
+    this.listenCartItemRemoval();
     const navigation = this.router.getCurrentNavigation();
     const state = navigation?.extras.state as { filters: any };
     const filters = state?.filters;
@@ -180,12 +197,21 @@ export class ProductsViewComponent implements OnInit, OnDestroy {
     }))
   }
 
-  addToCart(product: Product) {
-    this._cartService.addToCart(product);
+  addToCart(product: CardProduct) {
+    this.loadingCreation = true;
+    const cartItemRequest: CartItemRequest = {
+      productId: product.id,
+      quantity: 1, // Default quantity
+    };
+    this.cartService.addItemToCart(cartItemRequest);
+
+    //this.cartService.addItemToCart()
+    //this._cartService.addToCart(product);
   }
 
-  removeFromCart(product: Product) {
-    this._cartService.removeFromCart(product);
+  removeFromCart(product: CardProduct) {
+    this.cartService.removeItemFromCart(product.id);
+    //this._cartService.removeFromCart(product);
   }
 
   onPriceChange(event: any) {
@@ -215,6 +241,7 @@ export class ProductsViewComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.subs?.dispose()
     this.productService.resetGetAllCategory();
+    this.cartService.resetAddItemState();
   }
 
   /**
@@ -276,6 +303,62 @@ export class ProductsViewComponent implements OnInit, OnDestroy {
       }
     });
   }
+
+  listenCartItemAddition() {
+    effect(() => {
+      let addItemToCartState = this.cartService.addItemSig();
+      if (addItemToCartState.status === "OK") {
+        this.onCartItemAdditionOk(addItemToCartState);
+      } else if (addItemToCartState.status === "ERROR") {
+        this.onCartItemAdditionError();
+      }
+    });
+  }
+  private listenCartItemRemoval(): void {
+    effect(() => {
+      let removeItemFromCartState = this.cartService.removeItemSig(); // Track state for item removal
+      if (removeItemFromCartState.status === 'OK') {
+        this.onCartItemRemovalOk(removeItemFromCartState);
+      } else if (removeItemFromCartState.status === 'ERROR') {
+        this.onCartItemRemovalError();
+      }
+    });
+  }
+
+
+  onCartItemAdditionOk(addItemToCartState: State<Cart>) {
+    this.loadingCreation = false;
+    this.toastService.send({
+      severity: "success", summary: "Success", detail: "Product added successfully to your CART.",
+    });
+  }
+
+
+  private onCartItemAdditionError() {
+    this.loadingCreation = false;
+    this.toastService.send({
+      severity: "error", summary: "Error", detail: "Couldn't add your product to your CART, please try again.",
+    });
+  }
+
+  onCartItemRemovalOk(removeItemFromCartState: State<Cart>): void {
+    this.loadingCreation = false; // Set loading state to false
+    this.toastService.send({
+      severity: 'info',
+      summary: 'Removed',
+      detail: 'Product removed successfully from your CART.',
+    });
+  }
+
+  private onCartItemRemovalError(): void {
+    this.loadingCreation = false; // Set loading state to false
+    this.toastService.send({
+      severity: 'error',
+      summary: 'Error',
+      detail: "Couldn't remove the product from your CART, please try again.",
+    });
+  }
+
 
 
 }

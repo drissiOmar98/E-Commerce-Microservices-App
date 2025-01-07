@@ -35,6 +35,13 @@ public class CartItemCustomMapper {
         return product.price();
     }
 
+    @Named("fetchProductStockQuantity")
+    public double fetchProductStockQuantity(Integer productId) {
+        ProductDTO product = productClient.getProductDetailsById(productId);
+        return product.availableQuantity();
+    }
+
+
     @Named("calculateTotalPrice")
     public Double calculateTotalPrice(CartItem cartItem) {
         BigDecimal price = fetchProductPrice(cartItem.getProductId());
