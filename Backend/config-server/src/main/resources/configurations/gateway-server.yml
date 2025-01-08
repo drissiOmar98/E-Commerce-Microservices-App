@@ -53,3 +53,8 @@ spring:
           uri: lb:http://CART-SERVICE
           predicates:
             - Path=/api/v1/cart/**
+
+        - id: favourite-service
+          uri: lb:http://FAVOURITE-SERVICE
+          predicates:
+            - Path=/api/v1/favourites/**
