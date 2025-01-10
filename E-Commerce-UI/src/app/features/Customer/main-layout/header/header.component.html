@@ -10,8 +10,8 @@
   </span>
 
   <a [routerLink]="['/customer/cart']" class="p-link lg:hidden">
-    <i class="pi pi-shopping-cart text-2xl text-white" *ngIf="cartItems !== '0'" pBadge [value]="cartItems"></i>
-    <i class="pi pi-shopping-cart text-2xl text-white" *ngIf="cartItems === '0'"></i>
+    <i class="pi pi-shopping-cart text-2xl text-white" *ngIf="cartListCount !== 0" pBadge [value]="cartListCount"></i>
+    <i class="pi pi-shopping-cart text-2xl text-white" *ngIf="cartListCount === 0"></i>
   </a>
 
   <ul class="hidden lg:flex align-items-center list-none p-0 m-0 flex-grow-1">
@@ -26,8 +26,8 @@
         Wishlist
       </a></li>
     <li><a [routerLink]="['/customer/cart']" routerLinkActive="text-primary" class="p-2 no-underline text-white">
-        <i class="pi pi-shopping-cart mr-2" *ngIf="cartItems !== '0'" pBadge [value]="cartItems"></i>
-        <i class="pi pi-shopping-cart mr-2" *ngIf="cartItems === '0'"></i>
+        <i class="pi pi-shopping-cart mr-2" *ngIf="cartListCount !== 0" pBadge [value]="cartListCount"></i>
+        <i class="pi pi-shopping-cart mr-2" *ngIf="cartListCount === 0"></i>
         Cart
       </a></li>
   </ul>

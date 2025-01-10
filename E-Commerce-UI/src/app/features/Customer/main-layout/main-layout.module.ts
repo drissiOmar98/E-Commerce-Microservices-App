@@ -28,9 +28,6 @@ import {ButtonDirective, ButtonModule} from "primeng/button";
     SlideMenuModule,
     ButtonDirective,
     ButtonModule,
-
-
-
   ]
 })
 export class MainLayoutModule { }

@@ -11,6 +11,10 @@ export class CartService {
 
   http = inject(HttpClient);
 
+  constructor() {
+    this.getMyCart();  // Automatically fetch the cartList on service initialization
+  }
+
   private getCart$: WritableSignal<State<Cart>> = signal(State.Builder<Cart>().forInit());
   getCartSig = computed(() => this.getCart$());
 
@@ -26,15 +30,11 @@ export class CartService {
   private updateItem$: WritableSignal<State<Cart>> = signal(State.Builder<Cart>().forInit());
   updateItemSig = computed(() => this.updateItem$());
 
+  private cartListCount$: WritableSignal<number> = signal(0);
+  cartListCountSig = computed(() => this.cartListCount$());
 
-  // Computed signal to count total unique cart items
-  cartItemCount = computed(() => {
-    const cartState = this.getCart$().value; // Access current state of the cart
-    if (!cartState || !cartState.cartItems) return 0; // Safety check
 
-    // Simply return the count of cart items
-    return cartState.cartItems.length;
-  });
+
 
 
 
@@ -70,6 +70,24 @@ export class CartService {
       });
   }
 
+  /**
+   * Updates the cart item count based on cart data.
+   * This method will update the cartListCount$ writable signal.
+   */
+  /**
+   * Update the cart item count based on the fetched cart state.
+   */
+  updateCartlistCount(): void {
+    const state = this.getCart$();  // Get the current cart state
+
+    if (state.status === 'OK' && state.value) {
+      console.log("Cart item count being set:", state.value.cartItems.length);
+      this.cartListCount$.set(state.value.cartItems.length);  // Set the cart item count
+    } else {
+      console.log("Defaulting cart count to 0");
+      this.cartListCount$.set(0);  // Default cart count to 0 if the state is not 'OK'
+    }
+  }
 
 
 
@@ -78,7 +96,10 @@ export class CartService {
    */
   getMyCart(): void {
     this.http.get<Cart>(`${environment.API_URL}/cart`).subscribe({
-      next: (cart) => this.getCart$.set(State.Builder<Cart>().forSuccess(cart)),
+      next: (cart) =>{
+        this.getCart$.set(State.Builder<Cart>().forSuccess(cart));
+        this.updateCartlistCount();
+      },
       error: (err) => this.getCart$.set(State.Builder<Cart>().forError(err)),
     });
   }
@@ -100,7 +121,10 @@ export class CartService {
    */
   addItemToCart(cartItemRequest: CartItemRequest): void {
     this.http.post<Cart>(`${environment.API_URL}/cart/add/item`, cartItemRequest).subscribe({
-      next: (cart) => this.addItem$.set(State.Builder<Cart>().forSuccess(cart)),
+      next: (cart) =>{
+        this.addItem$.set(State.Builder<Cart>().forSuccess(cart));
+        this.getMyCart();
+      },
       error: (err) => this.addItem$.set(State.Builder<Cart>().forError(err)),
     });
   }
@@ -129,6 +153,7 @@ export class CartService {
     this.http.delete<Cart>(`${environment.API_URL}/cart/remove/item/${cartItemId}`).subscribe({
       next: (updatedCart) => {
         this.removeItem$.set(State.Builder<Cart>().forSuccess(updatedCart));
+        this.getMyCart();
         this.resetRemoveItemState(); // Automatically reset state after success
       },
       error: (err) => {
