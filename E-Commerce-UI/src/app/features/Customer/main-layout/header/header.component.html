@@ -21,8 +21,8 @@
     <li><a [routerLink]="['/customer/products/categories']" routerLinkActive="text-primary"
         class="p-2 no-underline text-white"><i class="pi pi-th-large mr-2" ></i> Categories</a></li>
     <li><a [routerLink]="['/customer/wishlist']" routerLinkActive="text-primary" class="p-2 no-underline text-white">
-        <i class="pi pi-heart mr-2" *ngIf="wishListItems !== '0'" pBadge [value]="wishListItems"></i>
-        <i class="pi pi-heart mr-2" *ngIf="wishListItems === '0'"></i>
+        <i class="pi pi-heart mr-2" *ngIf="wishListCount !== 0" pBadge [value]="wishListCount"></i>
+        <i class="pi pi-heart mr-2" *ngIf="wishListCount === 0"></i>
         Wishlist
       </a></li>
     <li><a [routerLink]="['/customer/cart']" routerLinkActive="text-primary" class="p-2 no-underline text-white">

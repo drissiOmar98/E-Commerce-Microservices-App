@@ -22,13 +22,10 @@ export class FavouriteService {
   private clearFavourites$: WritableSignal<State<void>> = signal(State.Builder<void>().forInit());
   clearFavouritesStateSig = computed(() => this.clearFavourites$());
 
-  private isProductInFavouriteMap$: Map<number, WritableSignal<State<boolean>>> = new Map();
+  private wishListCount$: WritableSignal<number> = signal(0);
+  wishListCountSig = computed(() => this.wishListCount$());
 
-  // Add a computed signal to store the wishlist count
-  wishlistItemsCount = computed(() => {
-    // Return the length of the current wishlist, defaulting to 0 if it's not yet available
-    return this.getWishListSig().status === 'OK' ? this.getWishListSig().value?.length : 0;
-  });
+  private isProductInFavouriteMap$: Map<number, WritableSignal<State<boolean>>> = new Map();
 
   // Get the signal for a specific product
   getIsProductInWishListSignal(productId: number): WritableSignal<State<boolean>> {
@@ -56,6 +53,18 @@ export class FavouriteService {
       });
   }
 
+  updateWishlistCount(): void {
+    const state = this.getWishList$(); // Get the signal value
+    if (state.status === 'OK' && state.value) {
+      console.log("Wishlist count being set:", state.value.length);
+      this.wishListCount$.set(state.value.length);
+    } else {
+      console.log("Defaulting wishlist count to 0");
+      this.wishListCount$.set(0);
+    }
+  }
+
+
   addToFavourites(favRequest: favouriteRequest): void {
     this.http.post<void>(`${environment.API_URL}/favourites`, favRequest)
       .subscribe({
@@ -74,16 +83,21 @@ export class FavouriteService {
   getMyWishList(): void {
     this.http.get<Array<Favourite>>(`${environment.API_URL}/favourites`)
       .subscribe({
-        next: favourites => this.getWishList$.set(State.Builder<Array<Favourite>>().forSuccess(favourites)),
+        next: favourites => {
+          this.getWishList$.set(State.Builder<Array<Favourite>>().forSuccess(favourites));
+          this.updateWishlistCount(); // Update count
+        },
         error: err => this.getWishList$.set(State.Builder<Array<Favourite>>().forError(err)),
       });
   }
+
 
   clearFavourites(): void {
     this.http.delete<void>(`${environment.API_URL}/favourites/clear`)
       .subscribe({
         next: () => {
           this.clearFavourites$.set(State.Builder<void>().forSuccess());
+          this.updateWishlistCount();
         },
         error: (err) => {
           this.clearFavourites$.set(State.Builder<void>().forError(err));
@@ -97,7 +111,8 @@ export class FavouriteService {
         next: () => {
           this.removeFromFavourites$.set(State.Builder<void>().forSuccess());  // Set success state
           this.getMyWishList();  // Refresh the wishlist
-          this.resetAddToFavouritesState();
+          // this.resetAddToFavouritesState();
+          this.updateWishlistCount();
         },
         error: (err) => {
           this.removeFromFavourites$.set(State.Builder<void>().forError(err));  // Set error in state
@@ -134,5 +149,8 @@ export class FavouriteService {
 
 
 
-  constructor() { }
+  constructor() {
+    this.getMyWishList();  // Automatically fetch the wishlist on service initialization
+  }
+
 }

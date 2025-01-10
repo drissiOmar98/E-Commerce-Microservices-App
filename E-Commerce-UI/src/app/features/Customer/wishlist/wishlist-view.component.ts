@@ -57,23 +57,6 @@ export class WishlistViewComponent implements OnInit ,OnDestroy  {
 
 
 
-
-
-  // addToCart(product: Product) {
-  //   this._cartService.addToCart(product);
-  // }
-
-  // removeFromCart(product: Product) {
-  //   this._cartService.removeFromCart(product);
-  // }
-
-  // removeFromWishlist(product: CardProduct) {
-  //
-  //   const removeProduct = this.productComponent.product;
-  //   this._messageService.add({ severity: 'info', summary: 'Removed', detail: 'Removed from wishlist' })
-  //   //this._wishlistService.removeWishListItem(removeProduct);
-  // }
-
   removeFromWishlist(product: CardProduct): void {
     this.favouriteService.removeFromFavourites(product.id);
   }
@@ -84,21 +67,7 @@ export class WishlistViewComponent implements OnInit ,OnDestroy  {
     this.favouriteService.getMyWishList();
   }
 
-  // private listenToFetchMyWishList() {
-  //   effect(() => {
-  //     const myWishListState = this.favouriteService.getWishListSig();
-  //     if (myWishListState.status === "OK") {
-  //       this.loading = false;
-  //       this.favouriteItems = myWishListState.value; // Default value in case of undefined
-  //       console.log('my Favourites Items:', this.favouriteService);
-  //     } else if (myWishListState.status === "ERROR") {
-  //       this.loading = false;
-  //       this.toastService.send({
-  //         severity: "error", detail: "Error when fetching Your Wish List",
-  //       });
-  //     }
-  //   });
-  // }
+
 
   private listenToFetchMyWishList(): void {
     effect(() => {

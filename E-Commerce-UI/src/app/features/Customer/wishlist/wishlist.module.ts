@@ -23,9 +23,7 @@ import {FavouriteService} from "../services/favourite.service";
     ToastModule,
     ButtonModule,
   ],
-  providers: [
-    FavouriteService
-  ],
+
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class WishlistModule { }

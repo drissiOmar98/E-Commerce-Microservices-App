@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, effect, inject, OnInit} from '@angular/core';
 import { Product } from '../../products/Product';
 import { CartService } from 'src/app/shared/cart.service';
 import { Router } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import {KeycloakService} from "../../../../shared/services/keycloak/keycloak.service";
 import {WishlistService} from "../../../../shared/wishlist.service";
+import {FavouriteService} from "../../services/favourite.service";
 
 
 @Component({
@@ -13,21 +14,21 @@ import {WishlistService} from "../../../../shared/wishlist.service";
   styleUrls: ['./header.component.scss']
 })
 export class HeaderComponent implements OnInit {
-  wishListItems!: string;
+  wishListCount: number = 0;
   cartItems: string = "0";
   items: MenuItem[] = [];
 
   constructor(
-    private _wishlistService: WishlistService,
     private _cartService: CartService,
     private keycloakService: KeycloakService,
-    private router: Router
-  ) { }
+    private router: Router,
+    private favouriteService: FavouriteService
+  ) {
+    this.subscribeToWishlistCount();
+  }
 
   ngOnInit() {
-    this._wishlistService.getWishListItems().subscribe((data: Product[]) => {
-      this.wishListItems = data.length.toString();
-    });
+
 
     this._cartService.getCartItems().subscribe((data: Product[]) => {
       this.cartItems = data.length.toString();
@@ -105,5 +106,12 @@ export class HeaderComponent implements OnInit {
       console.log(notification.label);
     }
   }));
+
+  subscribeToWishlistCount(): void {
+    // Using computed signals to track any updates to the wishlist count
+    effect(() => {
+      this.wishListCount = this.favouriteService.wishListCountSig();
+    });
+  }
 
 }

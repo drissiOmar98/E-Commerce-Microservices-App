@@ -249,6 +249,7 @@ export class ProductsViewComponent implements OnInit, OnDestroy {
     this.productService.resetGetAllCategory();
     this.cartService.resetAddItemState();
     this.favouriteService.resetAddToFavouritesState();
+    this.favouriteService.resetRemoveFromFavouritesState();
   }
 
   /**
@@ -369,7 +370,6 @@ export class ProductsViewComponent implements OnInit, OnDestroy {
       summary: "Success",
       detail: "Product added successfully to your wishlist.",
     });
-    this.favouriteService.resetAddToFavouritesState();
   }
 
   onWishlistAdditionError() {
