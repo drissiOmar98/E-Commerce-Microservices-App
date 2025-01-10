@@ -24,6 +24,12 @@ export class FavouriteService {
 
   private isProductInFavouriteMap$: Map<number, WritableSignal<State<boolean>>> = new Map();
 
+  // Add a computed signal to store the wishlist count
+  wishlistItemsCount = computed(() => {
+    // Return the length of the current wishlist, defaulting to 0 if it's not yet available
+    return this.getWishListSig().status === 'OK' ? this.getWishListSig().value?.length : 0;
+  });
+
   // Get the signal for a specific product
   getIsProductInWishListSignal(productId: number): WritableSignal<State<boolean>> {
     if (!this.isProductInFavouriteMap$.has(productId)) {
@@ -56,6 +62,7 @@ export class FavouriteService {
         next: () => {
           this.addToFavourites$.set(State.Builder<void>().forSuccess());  // Update success state
           this.getMyWishList();  // Refresh the wishlist
+          this.resetRemoveFromFavouritesState();
         },
         error: (err) => {
           this.addToFavourites$.set(State.Builder<void>().forError(err));  // Set error in state
@@ -90,6 +97,7 @@ export class FavouriteService {
         next: () => {
           this.removeFromFavourites$.set(State.Builder<void>().forSuccess());  // Set success state
           this.getMyWishList();  // Refresh the wishlist
+          this.resetAddToFavouritesState();
         },
         error: (err) => {
           this.removeFromFavourites$.set(State.Builder<void>().forError(err));  // Set error in state

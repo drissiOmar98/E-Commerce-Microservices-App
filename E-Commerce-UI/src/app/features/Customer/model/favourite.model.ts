@@ -2,7 +2,6 @@ import {DisplayPicture} from "../../Admin/model/product.model";
 
 export interface favouriteRequest {
   productId: number;
-  quantity: number
 }
 
 export interface Favourite {

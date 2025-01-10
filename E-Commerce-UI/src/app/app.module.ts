@@ -48,8 +48,6 @@ import {HttpInterceptorService} from "./shared/services/interceptor/http.interce
 import {AuthExpiredInterceptorService} from "./shared/services/interceptor/auth-expired.interceptor";
 import {LayoutModule} from "./features/Admin/layouts/layout.module";
 import {MainLayoutModule} from "./features/Customer/main-layout/main-layout.module";
-import {AdminModule} from "./features/Admin/admin.module";
-import {CustomerModule} from "./features/Customer/customer.module";
 import {ProductsService} from "./features/Customer/products/products.service";
 import {FooterStepComponent} from "./features/Admin/products/addproduct/footer-step/footer-step.component";
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
@@ -94,7 +92,6 @@ export function kcFactory(kcService: KeycloakService) {
   ],
   exports: [],
   providers: [
-    WishlistService,
     ProductsService,
     MessageService,
     {

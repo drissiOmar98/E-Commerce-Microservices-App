@@ -8,6 +8,7 @@ import {State} from "../../../../shared/model/state.model";
 import {Cart, CartItemRequest} from "../../model/cart.model";
 import {ToastService} from "../../../Admin/services/toast.service";
 import {CartService} from "../../services/cart.service";
+import {FavouriteService} from "../../services/favourite.service";
 
 
 @Component({
@@ -17,21 +18,12 @@ import {CartService} from "../../services/cart.service";
 })
 export class ProductComponent implements OnInit {
   toastService = inject(ToastService);
-
+  favouriteService = inject(FavouriteService);
   inCart: Map<number, boolean> = new Map();
+  inWishlist: Map<number , boolean> = new Map();
   //cartService = Inject(CartService);
   loadingCreation = false;
-  @Input() name!: string;
-  @Input() description!: string;
-  @Input() subcategory!: string;
-  @Input() categoryDescription!: string;
-  @Input() category!: string;
-  @Input() categoryId!: number;
-  @Input() subcategoryId!: number;
-  @Input() cover!: DisplayPicture;
-  @Input() id!: number;
-  @Input() inStock!: number;
-  @Input() price!: number;
+
   @Input() isListView!: boolean;
   @Input() wishlistView?: boolean;
 
@@ -44,14 +36,9 @@ export class ProductComponent implements OnInit {
 
   productX = input.required<CardProduct>();
 
-
-  inWishlist!: boolean;
-  //inCart!: boolean;
   public product!: Product;
 
-  //inCart!: boolean;
 
-  cardProduct: CardProduct | undefined;
 
 
 
@@ -61,85 +48,29 @@ export class ProductComponent implements OnInit {
     private _messageService: MessageService,
     private router: Router,
     private route: ActivatedRoute,
-    private _wishlistService: WishlistService,
     private cartService: CartService,
   ) {
     this.listenCheckIfProductInCart();
-    //this.listenCartItemAddition();
-    //this.listenCartItemRemoval();
-    //this.inCart=this.checkIfProductInCart(this.productX())
-    //this.inWishlist = this.checkInWishlist(this.id);
-    //this.inCart = this.checkInCart(this.id);
+    this.listenCheckIfProductInWishList();
   }
 
   ngOnInit() {
-    //this.inWishlist = this.checkInWishlist(this.id);
-    //this.inCart = this.checkInCart(this.id);
     this.checkProductInCart(this.productX().id);
-
+    this.checkProductInWishlist(this.productX().id)
   }
 
-  addRemoveItemWishlist(product: Product) {
-    this.inWishlist = !this.inWishlist;
-
-    if (this.inWishlist) {
-      this.addedToWishList.emit(product);
-      this._messageService.add({ severity: 'success', summary: 'Added', detail: 'Added to wishlist' })
+  addRemoveItemWishlist(product: CardProduct) {
+    console.log("inWishList before action:", this.inWishlist.get(product.id));
+    if (this.inWishlist.get(product.id)) {
+      this.removedFromWishList.emit(product); // Emit event for removal
+      this.favouriteService.getIsProductInWishListSignal(product.id).set(State.Builder<boolean>().forSuccess(false)); // Update inCart status directly
     } else {
-      this.removedFromWishList.emit(product);
-      this._messageService.add({ severity: 'info', summary: 'Removed', detail: 'Removed from wishlist' })
+      this.addedToWishList.emit(product); // Emit event for addition
+      this.favouriteService.getIsProductInWishListSignal(product.id).set(State.Builder<boolean>().forSuccess(true)); // Update inCart status directly
     }
+    console.log("inCart after action:", this.inCart.get(product.id));
   }
 
-  // Check to see if item is in wishlist
-  // checkInWishlist(id: number) {
-  //   return this._wishlistService.inWishlist(id)
-  // }
-
-  // checkInCart(id: number) {
-  //   return this._cartService.inCart(id);
-  // }
-
-  /*addRemoveCartItem(product: CardProduct) {
-    this.inCart = !this.inCart;
-
-    if (this.inCart) {
-      this.addedToCart.emit(product);
-      this._messageService.add({ severity: 'success', summary: 'Added', detail: 'Added to cart' })
-    } else {
-      this.removedFromCart.emit(product);
-      this._messageService.add({ severity: 'info', summary: 'Removed', detail: 'Removed from cart' })
-    }
-  }*/
-  // addRemoveCartItem(product: CardProduct): void {
-  //   if (this.inCart) {
-  //     this.cartService.removeItemFromCart(product.id); // This invokes the service method
-  //   } else {
-  //     const cartItemRequest: CartItemRequest = {
-  //       productId: product.id,
-  //       quantity: 1, // Default quantity to add
-  //     };
-  //     this.cartService.addItemToCart(cartItemRequest);
-  //   }
-  // }
-
-  // addRemoveCartItem(product: CardProduct): void {
-  //   console.log("inCart",this.inCart)
-  //   if (this.inCart) {
-  //     this.removedFromCart.emit(product); // Emit event for removal
-  //   } else {
-  //     this.addedToCart.emit(product); // Emit event for addition
-  //   }
-  // }
-
-  // // Method for handling add/remove cart logic
-  // addRemoveCartItem(product: CardProduct): void {
-  //   if (this.inCart.get(product.id)) {
-  //     this.removedFromCart.emit(product);  // Emit for cart removal
-  //   } else {
-  //     this.addedToCart.emit(product);  // Emit for cart addition
-  //   }
-  // }
 
   addRemoveCartItem(product: CardProduct): void {
     console.log("inCart before action:", this.inCart.get(product.id));
@@ -160,6 +91,11 @@ export class ProductComponent implements OnInit {
   getButtonClass(productId: number): string {
     const isInCart = this.inCart.get(productId); // Fetch the `inCart` status of the product
     return isInCart ? 'p-button-rounded p-button-primary' : 'p-button-rounded p-button-outlined'; // Set the appropriate button class
+  }
+
+  getButtonLikeCLass(productId: number): string{
+    const isInWishList: boolean|undefined= this.inWishlist.get(productId);
+    return isInWishList ? 'pi pi-heart-fill wishlist' : 'pi pi-heart';
   }
 
 
@@ -206,28 +142,12 @@ export class ProductComponent implements OnInit {
     console.log("Checking if product is in cart:", productId);
     this.cartService.checkProductInCart(productId);
   }
+  private checkProductInWishlist(productId: number): void {
+    console.log("Checking if product is in Favourite List:", productId);
+    this.favouriteService.checkProductInWishList(productId);
+  }
 
-  // // Listen for product state changes and update the local inCart state for the specific product
-  // private listenCheckIfProductInCart(): void {
-  //   effect(() => {
-  //     // Access the specific product signal for the given productId
-  //     const productStateSignal = this.cartService.getIsProductInCartSignal(this.productX().id);
-  //     const state = productStateSignal(); // Get the current state of the product
-  //
-  //     if (state.status === "OK") {
-  //       // If state.value is undefined, handle it with a fallback to false
-  //       const inCart = state.value ?? false; // Fallback to `false` if `state.value` is undefined
-  //
-  //       this.inCart.set(this.productX().id, inCart); // Update the map with inCart status for that product
-  //       console.log("Product is in cart:", this.productX().id, inCart);
-  //     } else if (state.status === "ERROR") {
-  //       this.toastService.send({
-  //         severity: "error", summary: "Error", detail: "Failed to check product status",
-  //       });
-  //       console.error("Error fetching product in cart state");
-  //     }
-  //   });
-  // }
+
 
   private listenCheckIfProductInCart(): void {
     effect(() => {
@@ -243,6 +163,23 @@ export class ProductComponent implements OnInit {
           severity: "error", summary: "Error", detail: "Failed to check product status",
         });
         console.error("Error fetching product in cart state");
+      }
+    });
+  }
+  private listenCheckIfProductInWishList(): void {
+    effect(() => {
+      const itemStateSignal = this.favouriteService.getIsProductInWishListSignal(this.productX().id);
+      const state = itemStateSignal();  // Get the current state of the product
+
+      if (state.status === "OK") {
+        // Update the product inCart status immediately
+        this.inWishlist.set(this.productX().id, state.value ?? false);  // Update the map with inWishList status
+        console.log("Product in wishList:", this.productX().id, state.value);
+      } else if (state.status === "ERROR") {
+        this.toastService.send({
+          severity: "error", summary: "Error", detail: "Failed to check product status",
+        });
+        console.error("Error fetching product in wishlist state");
       }
     });
   }

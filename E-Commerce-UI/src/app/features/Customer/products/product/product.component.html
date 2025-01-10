@@ -93,9 +93,9 @@
      style="max-width: 100%; width: 100%; height: 100%;">
 
   <!-- Favorite Icon -->
-  <i (click)="addRemoveItemWishlist(product)"
+  <i (click)="addRemoveItemWishlist(productX())"
      class="favorite absolute top-2 right-2 z-10 text-xl cursor-pointer"
-     [class]="inWishlist ? 'pi pi-heart-fill wishlist' : 'pi pi-heart'"></i>
+     [class]="getButtonLikeCLass(productX().id)"></i>
 
   <div class="relative flex flex-column align-items-center" style="height: 100%;">
 
@@ -141,9 +141,9 @@
 <!-- List view -->
 <ng-template #listView>
   <div class="flex flex-column transition-duration-500 hover:shadow-4 w-full border-1 border-primary wishlist-container border-round-md my-3 p-3 md:p-5 relative">
-    <i *ngIf="!wishlistView" (click)="addRemoveItemWishlist(product)"
+    <i *ngIf="!wishlistView" (click)="addRemoveItemWishlist(productX())"
        class="favorite absolute top-2 right-2 z-10 text-xl cursor-pointer"
-       [class]="inWishlist ? 'pi pi-heart-fill wishlist' : 'pi pi-heart'"></i>
+       [class]="getButtonLikeCLass(productX().id)"></i>
 
     <!-- Left side -->
     <div class="flex flex-column items-center md:items-start md:flex-row">
@@ -170,7 +170,7 @@
             <span class="text-green-500 text-sm align-self-center md:align-self-auto" *ngIf="productX().availableQuantity=== 1">{{ productX().availableQuantity }} item available</span>
             <span *ngIf="productX().availableQuantity === 0" class="text-red-500 text-sm align-self-center md:align-self-auto">Not available</span>
             <h2 class="font-medium text-lg md:text-xl mb-1">{{ productX().price | number }} RSD</h2>
-            <span class="text-sm">or 12 x {{ getInstallmentPayAmount(price) | number }} RSD / month</span>
+            <span class="text-sm">or 12 x {{ getInstallmentPayAmount(productX().price) | number }} RSD / month</span>
           </div>
 
           <p-button (click)="productX().availableQuantity > 0 && addRemoveCartItem(productX())"

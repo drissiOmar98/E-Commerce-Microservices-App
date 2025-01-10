@@ -7,7 +7,7 @@ import {ProductsModule} from "../products/products.module";
 import {Button, ButtonModule} from "primeng/button";
 import {BreadcrumbModule} from "primeng/breadcrumb";
 import {ToastModule} from "primeng/toast";
-import {WishlistService} from "../../../shared/wishlist.service";
+import {FavouriteService} from "../services/favourite.service";
 
 
 @NgModule({
@@ -24,7 +24,7 @@ import {WishlistService} from "../../../shared/wishlist.service";
     ButtonModule,
   ],
   providers: [
-    WishlistService
+    FavouriteService
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
