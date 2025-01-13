@@ -81,4 +81,18 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     Page<Product> findProductsByPriceRange(Pageable pageable, @Param("minPrice") BigDecimal minPrice, @Param("maxPrice") BigDecimal maxPrice);
 
 
+
+    @Query("SELECT product FROM Product product " +
+            "LEFT JOIN FETCH product.pictures picture " +
+            "WHERE product.id != :productId " +
+            "AND product.category.id = :categoryId " +
+            "AND (:subcategoryId IS NULL OR product.subcategory.id = :subcategoryId) " +
+            "AND picture.isCover = true")
+    Page<Product> findRelatedProducts(@Param("productId") Integer productId,
+                                      @Param("categoryId") Integer categoryId,
+                                      @Param("subcategoryId") Integer subcategoryId,
+                                      Pageable pageable);
+
+
+
 }

@@ -8,7 +8,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.UUID;
+
 
 public interface ProductService {
     Integer createProduct(ProductRequest request);
@@ -38,4 +38,6 @@ public interface ProductService {
     public Page<DisplayCardProductDTO> filterProductsByPriceRange(Pageable pageable, BigDecimal minPrice, BigDecimal maxPrice);
 
     DisplayCardProductDTO getProductDetailsWithCover(Integer productId);
+
+    public Page<DisplayCardProductDTO> findRelatedProducts(Integer productId, Pageable pageable);
 }

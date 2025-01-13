@@ -131,6 +131,15 @@ public class ProductController {
         return ResponseEntity.ok(productService.getAllByCategory(pageable,categoryId));
     }
 
+    @GetMapping("/{productId}/related")
+    public ResponseEntity<Page<DisplayCardProductDTO>> getRelatedProducts(
+            @PathVariable Integer productId,
+            Pageable pageable) {
+        Page<DisplayCardProductDTO> relatedProducts = productService.findRelatedProducts(productId, pageable);
+        return ResponseEntity.ok(relatedProducts);
+    }
+
+
 //    @GetMapping("/get-all-by-categoryAndSub")
 //    public ResponseEntity<Page<DisplayCardProductDTO>> getAllByCategoryAndSubcategory(
 //            @RequestParam String categoryName,

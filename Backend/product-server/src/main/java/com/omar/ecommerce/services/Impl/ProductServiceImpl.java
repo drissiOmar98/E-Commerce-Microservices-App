@@ -188,6 +188,26 @@ public class ProductServiceImpl implements ProductService {
         return productMapper.productToDisplayCardProductDTO(product);
     }
 
+    @Override
+    public Page<DisplayCardProductDTO> findRelatedProducts(Integer productId, Pageable pageable) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + productId));
+
+        Integer categoryId = product.getCategory().getId();
+        Integer subcategoryId = product.getSubcategory() != null ? product.getSubcategory().getId() : null;
+
+        Page<Product> relatedProductsPage = productRepository.findRelatedProducts(
+                productId,
+                categoryId,
+                subcategoryId,
+                pageable
+        );
+
+        return relatedProductsPage.map(productMapper::productToDisplayCardProductDTO);
+    }
+
+
+
 //    @Override
 //    public List<ProductResponse> findAllProducts() {
 //        return productRepository.findAll()
