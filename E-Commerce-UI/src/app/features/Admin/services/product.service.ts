@@ -16,6 +16,10 @@ export class ProductService {
   private create$: WritableSignal<State<CreatedProduct>> = signal(State.Builder<CreatedProduct>().forInit());
   createSig = computed(() => this.create$());
 
+  private getRelatedProducts$: WritableSignal<State<Page<CardProduct>>>
+    = signal(State.Builder<Page<CardProduct>>().forInit());
+  getRelatedProductsSig = computed(() => this.getRelatedProducts$());
+
   private getAllByCategory$: WritableSignal<State<Page<CardProduct>>>
     = signal(State.Builder<Page<CardProduct>>().forInit());
   getAllByCategorySig = computed(() => this.getAllByCategory$());
@@ -66,20 +70,6 @@ export class ProductService {
    * @param pageRequest - Pagination options.
    * @param categoryId - The optional category ID to filter by.
    */
-  // getAllByCategory(pageRequest: Pagination, categoryId: number | null) : void {
-  //   let params = createPaginationOption(pageRequest);
-  //   const url = categoryId
-  //     ? `${environment.API_URL}/products/get-all-by-category/${categoryId}`
-  //     : `${environment.API_URL}/products/get-all-by-category`;
-  //
-  //   console.log('Fetching from URL:', url, 'with params:', params);
-  //   this.http.get<Page<CardProduct>>(url, { params })
-  //     .subscribe({
-  //       next: products =>
-  //         this.getAllByCategory$.set(State.Builder<Page<CardProduct>>().forSuccess(products)),
-  //       error: error => this.getAllByCategory$.set(State.Builder<Page<CardProduct>>().forError(error))
-  //     })
-  // }
   getAllByCategory(pageRequest: Pagination, categoryId: number | null): void {
     let params = createPaginationOption(pageRequest);
 
@@ -101,6 +91,17 @@ export class ProductService {
       });
   }
 
+  getRelatedProducts(pageRequest: Pagination, productId: number): void {
+    this.http.get<Page<CardProduct>>(`${environment.API_URL}/products/${productId}/related`)
+      .subscribe({
+        next: (relatedProducts) => this.getRelatedProducts$.set(State.Builder<Page<CardProduct>>().forSuccess(relatedProducts)),
+        error: (error) => {
+          this.getRelatedProducts$.set(State.Builder<Page<CardProduct>>().forError(error));
+        }
+      });
+  }
+
+
 
   getProductById(productId: number): void {
     this.http.get<Product>(`${environment.API_URL}/products/get-one/${productId}`)
@@ -115,6 +116,10 @@ export class ProductService {
    */
   resetGetAllCategory(): void {
     this.getAllByCategory$.set(State.Builder<Page<CardProduct>>().forInit())
+  }
+
+  resetGetRelatedProducts():void{
+    this.getRelatedProducts$.set(State.Builder<Page<CardProduct>>().forInit());
   }
 
   resetGetOneById(): void {

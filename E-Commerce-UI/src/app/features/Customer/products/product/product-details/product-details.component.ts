@@ -5,11 +5,16 @@ import { ProductsService } from '../../products.service';
 import { MenuItem, MessageService } from 'primeng/api';
 import { WishlistService } from 'src/app/shared/wishlist.service';
 
-import { CartService } from 'src/app/shared/cart.service';
-import {DisplayPicture, Product} from "../../../../Admin/model/product.model";
+import {CardProduct, DisplayPicture, Product} from "../../../../Admin/model/product.model";
 import {ToastService} from "../../../../Admin/services/toast.service";
 import {ProductService} from "../../../../Admin/services/product.service";
 import {map} from "rxjs";
+import {Pagination} from "../../../../../shared/model/request.model";
+import {Cart, CartItemRequest} from "../../../model/cart.model";
+import {CartService} from "../../../services/cart.service";
+import {favouriteRequest} from "../../../model/favourite.model";
+import {FavouriteService} from "../../../services/favourite.service";
+import {State} from "../../../../../shared/model/state.model";
 
 @Component({
   selector: 'app-product-details',
@@ -20,18 +25,25 @@ export class ProductDetailsComponent implements OnInit ,  OnDestroy {
 
   toastService = inject(ToastService);
   productService= inject(ProductService);
+  cartService= inject(CartService);
+  favouriteService= inject(FavouriteService);
   activatedRoute = inject(ActivatedRoute);
   router = inject(Router);
   loading = true;
+  emptySearch = false;
+  loadingCreation = false;
+  relatedProducts: CardProduct[] = [];
   myProduct: Product | undefined;
   currentProductId!: number;
 
+  pageRequest: Pagination = {size: 20, page: 0, sort: []};
 
 
 
 
-  images!: any[];
-  product: any | null = null;
+
+
+
   id!: number;
 
   selectedMonthlyPayment: any = { name: 12 }
@@ -89,17 +101,21 @@ export class ProductDetailsComponent implements OnInit ,  OnDestroy {
     private _location: Location,
     private _productService: ProductsService,
     private _wishlistService: WishlistService,
-    private _cartService: CartService,
     private _messageService: MessageService
   ) {
     this.listenToFetchProduct();
+    this.listenToFetchRelatedProducts();
+    this.listenCartItemAddition();
+    this.listenCartItemRemoval();
+    this.listenFavouriteItemAddition();
+    this.listenFavouriteItemRemoval();
     const navigation = this.router.getCurrentNavigation();
     const state = navigation?.extras.state as { product: any };
     if (state?.product) {
       this.id = state?.product.id;
       //this.inWishlist = this.checkInWishlist(this.id)
-      this.product = state?.product;
-      this.images = state?.product.images
+      // this.product = state?.product;
+      // this.images = state?.product.images
 
       // Suggested products
       const productCategory = state?.product.category?.name;
@@ -113,24 +129,25 @@ export class ProductDetailsComponent implements OnInit ,  OnDestroy {
 
   ngOnInit() {
     this.extractIdParamFromRouter();
+
     //this.id = this.activatedRoute.snapshot.params['id'];
 
     // If user navigated manually to the route
-    if (!this.product) {
-      this._productService.getProductById(this.id).subscribe((product: any) => {
-        this.product = product.data.product[0];
-        this.images = product.data.product[0].images;
-        //this.setBreadcrumbItems();
-        this.inWishlist = this.checkInWishlist(this.id);
-
-        // Suggested products
-        const productCategory = product.data.product[0].category?.name;
-        this._productService.getProductsByCategory(productCategory).subscribe((suggestedProducts: any) => {
-          this.suggestedProducts = suggestedProducts.data.product;
-        })
-      })
-      //this.inWishlist = this.checkInWishlist(this.id);
-    }
+    // if (!this.product) {
+    //   this._productService.getProductById(this.id).subscribe((product: any) => {
+    //     this.product = product.data.product[0];
+    //     this.images = product.data.product[0].images;
+    //     //this.setBreadcrumbItems();
+    //     this.inWishlist = this.checkInWishlist(this.id);
+    //
+    //     // Suggested products
+    //     const productCategory = product.data.product[0].category?.name;
+    //     this._productService.getProductsByCategory(productCategory).subscribe((suggestedProducts: any) => {
+    //       this.suggestedProducts = suggestedProducts.data.product;
+    //     })
+    //   })
+    //   //this.inWishlist = this.checkInWishlist(this.id);
+    // }
 
     // Breadcrumbs setup
     //this.setBreadcrumbItems();
@@ -139,6 +156,10 @@ export class ProductDetailsComponent implements OnInit ,  OnDestroy {
 
   ngOnDestroy(): void {
     this.productService.resetGetOneById();
+    this.productService.resetGetRelatedProducts();
+    this.cartService.resetAddItemState();
+    this.favouriteService.resetAddToFavouritesState();
+    this.favouriteService.resetRemoveFromFavouritesState();
   }
 
   getNumVisible(): number {
@@ -157,39 +178,45 @@ export class ProductDetailsComponent implements OnInit ,  OnDestroy {
   }
 
   addProductToWishList(product: Product) {
-    const itemInWishList = this.checkInWishlist(product.id);
-    if (!itemInWishList) {
-      this.addToWishList(product);
-      this.inWishlist = true;
-      this._messageService.add({ severity: 'success', summary: 'Added', detail: 'Added to wishlist' })
-    } else {
-      this.removedFromWishList(product);
-      this.inWishlist = false;
-      this._messageService.add({ severity: 'info', summary: 'Removed', detail: 'Removed from wishlist' })
-    }
+    // const itemInWishList = this.checkInWishlist(product.id);
+    // if (!itemInWishList) {
+    //   this.addToWishList(product);
+    //   this.inWishlist = true;
+    //   this._messageService.add({ severity: 'success', summary: 'Added', detail: 'Added to wishlist' })
+    // } else {
+    //   this.removedFromWishList(product);
+    //   this.inWishlist = false;
+    //   this._messageService.add({ severity: 'info', summary: 'Removed', detail: 'Removed from wishlist' })
+    // }
   }
 
-  // TODO: fix add and remove from wishlist
-  addToWishlist(product: Product) {
+
+
+
+  addToCart(product: CardProduct) {
+    this.loadingCreation = true;
+    const cartItemRequest: CartItemRequest = {
+      productId: product.id,
+      quantity: 1, // Default quantity
+    };
+    this.cartService.addItemToCart(cartItemRequest);
   }
 
-  removeFromWishlist(product: Product) {
+  removeFromCart(product: CardProduct) {
+    this.cartService.removeItemFromCart(product.id);
   }
 
-  addToCart(product: Product) {
-    //this._cartService.addToCart(product);
+
+  addToWishList(product: CardProduct) {
+    this.loadingCreation = true;
+    const favRequest: favouriteRequest = {
+      productId: product.id,
+    };
+    this.favouriteService.addToFavourites(favRequest);
   }
 
-  removeFromCart(product: Product) {
-    //this._cartService.removeFromCart(product);
-  }
-
-  addToWishList(product: Product) {
-    //this._wishlistService.addWishListItem(product);
-  }
-
-  removedFromWishList(product: Product) {
-    //this._wishlistService.removeWishListItem(product);
+  removedFromWishList(product: CardProduct) {
+    this.favouriteService.removeFromFavourites(product.id);
   }
 
   checkIfInWishlist(product: Product) {
@@ -197,29 +224,27 @@ export class ProductDetailsComponent implements OnInit ,  OnDestroy {
   }
 
   // Move to service
-  openProductDetails(id: number) {
-    const product = {
-      name: this.product.name,
-      description: this.product.description,
-      subcategory: this.product.subcategory,
-      images: this.product.images,
-      EAN: this.product.EAN,
-      id,
-      inStock: this.product.inStock,
-      price: this.product.price
-    }
-
-    const navigationExtras: NavigationExtras = {
-      state: {
-        product
-      }
-    }
-    this.router.navigate(['/product', id], navigationExtras);
-  }
-
-  // getInstallmentPayAmount(price: number, months: any) {
-  //   return Math.floor(price / months);
+  // openProductDetails(id: number) {
+  //   const product = {
+  //     name: this.product.name,
+  //     description: this.product.description,
+  //     subcategory: this.product.subcategory,
+  //     images: this.product.images,
+  //     EAN: this.product.EAN,
+  //     id,
+  //     inStock: this.product.inStock,
+  //     price: this.product.price
+  //   }
+  //
+  //   const navigationExtras: NavigationExtras = {
+  //     state: {
+  //       product
+  //     }
+  //   }
+  //   this.router.navigate(['/product', id], navigationExtras);
   // }
+
+
   getInstallmentPayAmount(price: number, months: number): number {
     if (!months || months <= 0) {
       return 0; // Return 0 for invalid input
@@ -238,13 +263,17 @@ export class ProductDetailsComponent implements OnInit ,  OnDestroy {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  replaceProduct(id: number) {
-    const newProduct = this.suggestedProducts.find((p) => p.id == id)
-    this.id = newProduct.id;
-    //this.inWishlist = this.checkIfInWishlist(newProduct.id);
-    this.product = newProduct;
-    this.images = newProduct.images;
-    this.router.navigate(['/product', newProduct.id])
+  // replaceProduct(id: number) {
+  //   const newProduct = this.relatedProducts.find((p) => p.id == id)
+  //   this.id = newProduct?.id;
+  //   //this.inWishlist = this.checkIfInWishlist(newProduct.id);
+  //   this.router.navigate(['/product', newProduct.id])
+  // }
+
+  replaceProduct(newProductId: number): void {
+    console.log('Replacing product with ID:', newProductId);
+    this.fetchProductDetails(newProductId);
+    this.fetchRelatedProducts(newProductId);
   }
 
   buyProduct(product: Product) {
@@ -271,6 +300,7 @@ export class ProductDetailsComponent implements OnInit ,  OnDestroy {
       next: productId => {
         if (productId !== null) {
           this.fetchProductDetails(productId);
+          this.fetchRelatedProducts(productId);
         } else {
           this.toastService.send({
             severity: "error",
@@ -292,6 +322,12 @@ export class ProductDetailsComponent implements OnInit ,  OnDestroy {
     this.currentProductId=productId;
     this.productService.getProductById(productId);
   }
+
+  private fetchRelatedProducts(productId: number): void {
+    this.productService.getRelatedProducts(this.pageRequest, productId);
+  }
+
+
 
 
   private listenToFetchProduct() {
@@ -323,6 +359,133 @@ export class ProductDetailsComponent implements OnInit ,  OnDestroy {
       pictures.unshift(cover);
     }
     return pictures;
+  }
+
+  private listenToFetchRelatedProducts() {
+    effect(() => {
+      const relatedProductsState = this.productService.getRelatedProductsSig();
+      if (relatedProductsState.status === "OK") {
+        this.relatedProducts = relatedProductsState.value?.content || [];
+        this.loading = false;
+        this.emptySearch = false;
+      } else if (relatedProductsState.status === "ERROR") {
+        this.toastService.send({
+          severity: "error", detail: "Error when fetching the related products", summary: "Error",
+        });
+        this.loading = false;
+        this.emptySearch = false;
+      }
+    });
+  }
+
+  listenCartItemAddition() {
+    effect(() => {
+      let addItemToCartState = this.cartService.addItemSig();
+      if (addItemToCartState.status === "OK") {
+        this.onCartItemAdditionOk(addItemToCartState);
+      } else if (addItemToCartState.status === "ERROR") {
+        this.onCartItemAdditionError();
+      }
+    });
+  }
+
+  listenFavouriteItemAddition() {
+    effect(() => {
+      let addItemToFavouriteState = this.favouriteService.addToFavouritesSig();
+      if (addItemToFavouriteState.status === "OK") {
+        this.onWishlistAdditionOk(addItemToFavouriteState);
+      } else if (addItemToFavouriteState.status === "ERROR") {
+        this.onWishlistAdditionError();
+      }
+    });
+  }
+  private listenCartItemRemoval(): void {
+    effect(() => {
+      let removeItemFromCartState = this.cartService.removeItemSig(); // Track state for item removal
+      if (removeItemFromCartState.status === 'OK') {
+        this.onCartItemRemovalOk(removeItemFromCartState);
+      } else if (removeItemFromCartState.status === 'ERROR') {
+        this.onCartItemRemovalError();
+      }
+    });
+  }
+
+  private listenFavouriteItemRemoval(): void {
+    effect(() => {
+      let removeItemFromFavouriteState = this.favouriteService.removeFromFavouritesSig(); // Track state for item removal
+      if (removeItemFromFavouriteState.status === 'OK') {
+        this.onFavouriteItemRemovalOk(removeItemFromFavouriteState);
+      } else if (removeItemFromFavouriteState.status === 'ERROR') {
+        this.onFavouriteItemRemovalError();
+      }
+    });
+  }
+  onCartItemAdditionOk(addItemToCartState: State<Cart>) {
+    this.loadingCreation = false;
+    this.toastService.send({
+      severity: "success", summary: "Success", detail: "Product added successfully to your CART.",
+    });
+  }
+
+  onWishlistAdditionOk(state: State<void>) {
+    this.loadingCreation = false;
+    this.toastService.send({
+      severity: "success",
+      summary: "Success",
+      detail: "Product added successfully to your wishlist.",
+    });
+  }
+
+  onWishlistAdditionError() {
+    this.loadingCreation = false;
+    this.toastService.send({
+      severity: "error",
+      summary: "Error",
+      detail: `Failed to add product to wishlist`,
+    });
+  }
+
+
+  private onCartItemAdditionError() {
+    this.loadingCreation = false;
+    this.toastService.send({
+      severity: "error", summary: "Error", detail: "Couldn't add your product to your CART, please try again.",
+    });
+  }
+
+  onCartItemRemovalOk(removeItemFromCartState: State<Cart>): void {
+    this.loadingCreation = false; // Set loading state to false
+    this.toastService.send({
+      severity: 'info',
+      summary: 'Removed',
+      detail: 'Product removed successfully from your CART.',
+    });
+  }
+  onFavouriteItemRemovalOk(removeItemFromFavouriteState: State<void>): void {
+    this.loadingCreation = false; // Set loading state to false
+    this.toastService.send({
+      severity: 'info',
+      summary: 'Removed',
+      detail: 'Product removed successfully from your WishList.',
+    });
+  }
+
+  private onCartItemRemovalError(): void {
+    this.loadingCreation = false; // Set loading state to false
+    this.toastService.send({
+      severity: 'error',
+      summary: 'Error',
+      detail: "Couldn't remove the product from your CART, please try again.",
+    });
+  }
+
+  private onFavouriteItemRemovalError(): void {
+    this.loadingCreation = false; // Set loading state to false
+    this.toastService.send({
+      severity: 'error',
+      summary: 'Error',
+      detail: "Couldn't remove the product from your WishList, please try again.",
+    });
   }
 
 

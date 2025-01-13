@@ -123,6 +123,10 @@ export class ProductComponent implements OnInit {
     } else {
       console.log('Updating current product state.');
       this.replaceCurrentProduct.emit(id);
+      // Navigate to the new product details page
+      this.router.navigate(['/customer/products/product', id], navigationExtras)
+        .then(() => console.log('Navigation to new product successful.'))
+        .catch(err => console.error('Navigation failed:', err));
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
