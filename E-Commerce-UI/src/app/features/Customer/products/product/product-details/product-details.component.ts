@@ -4,17 +4,16 @@ import { Location } from '@angular/common';
 import { ProductsService } from '../../products.service';
 import { MenuItem, MessageService } from 'primeng/api';
 import { WishlistService } from 'src/app/shared/wishlist.service';
-
 import {CardProduct, DisplayPicture, Product} from "../../../../Admin/model/product.model";
 import {ToastService} from "../../../../Admin/services/toast.service";
 import {ProductService} from "../../../../Admin/services/product.service";
 import {map} from "rxjs";
 import {Pagination} from "../../../../../shared/model/request.model";
 import {Cart, CartItemRequest} from "../../../model/cart.model";
+import {State} from "../../../../../shared/model/state.model";
+import {FavouriteService} from "../../../services/favourite.service";
 import {CartService} from "../../../services/cart.service";
 import {favouriteRequest} from "../../../model/favourite.model";
-import {FavouriteService} from "../../../services/favourite.service";
-import {State} from "../../../../../shared/model/state.model";
 
 @Component({
   selector: 'app-product-details',
@@ -22,6 +21,7 @@ import {State} from "../../../../../shared/model/state.model";
   styleUrls: ['./product-details.component.scss']
 })
 export class ProductDetailsComponent implements OnInit ,  OnDestroy {
+
 
   toastService = inject(ToastService);
   productService= inject(ProductService);
@@ -33,6 +33,7 @@ export class ProductDetailsComponent implements OnInit ,  OnDestroy {
   emptySearch = false;
   loadingCreation = false;
   relatedProducts: CardProduct[] = [];
+  inWishlist: Map<number , boolean> = new Map();
   myProduct: Product | undefined;
   currentProductId!: number;
 
@@ -91,7 +92,6 @@ export class ProductDetailsComponent implements OnInit ,  OnDestroy {
     }
   ];
 
-  inWishlist!: boolean;
   displayCustom!: boolean;
 
   activeIndex: number = 0;
@@ -100,8 +100,6 @@ export class ProductDetailsComponent implements OnInit ,  OnDestroy {
   constructor(
     private _location: Location,
     private _productService: ProductsService,
-    private _wishlistService: WishlistService,
-    private _messageService: MessageService
   ) {
     this.listenToFetchProduct();
     this.listenToFetchRelatedProducts();
@@ -109,46 +107,13 @@ export class ProductDetailsComponent implements OnInit ,  OnDestroy {
     this.listenCartItemRemoval();
     this.listenFavouriteItemAddition();
     this.listenFavouriteItemRemoval();
+    this.listenCheckIfProductInWishList();
     const navigation = this.router.getCurrentNavigation();
     const state = navigation?.extras.state as { product: any };
-    if (state?.product) {
-      this.id = state?.product.id;
-      //this.inWishlist = this.checkInWishlist(this.id)
-      // this.product = state?.product;
-      // this.images = state?.product.images
-
-      // Suggested products
-      const productCategory = state?.product.category?.name;
-      this._productService.getProductsByCategory(productCategory).subscribe((suggestedProducts: any) => {
-        // TODO: filter out the currently selected item and remove it from suggestions list
-        this.suggestedProducts = suggestedProducts.data.product;
-        // Undefined when user reload the page or goes directly to this route
-      })
-    }
   }
 
   ngOnInit() {
     this.extractIdParamFromRouter();
-
-    //this.id = this.activatedRoute.snapshot.params['id'];
-
-    // If user navigated manually to the route
-    // if (!this.product) {
-    //   this._productService.getProductById(this.id).subscribe((product: any) => {
-    //     this.product = product.data.product[0];
-    //     this.images = product.data.product[0].images;
-    //     //this.setBreadcrumbItems();
-    //     this.inWishlist = this.checkInWishlist(this.id);
-    //
-    //     // Suggested products
-    //     const productCategory = product.data.product[0].category?.name;
-    //     this._productService.getProductsByCategory(productCategory).subscribe((suggestedProducts: any) => {
-    //       this.suggestedProducts = suggestedProducts.data.product;
-    //     })
-    //   })
-    //   //this.inWishlist = this.checkInWishlist(this.id);
-    // }
-
     // Breadcrumbs setup
     //this.setBreadcrumbItems();
     this.home = { icon: 'pi pi-home', routerLink: '/home' };
@@ -173,21 +138,21 @@ export class ProductDetailsComponent implements OnInit ,  OnDestroy {
     this._location.back();
   }
 
-  checkInWishlist(id: number) {
-    return this._wishlistService.inWishlist(id)
-  }
 
   addProductToWishList(product: Product) {
-    // const itemInWishList = this.checkInWishlist(product.id);
-    // if (!itemInWishList) {
-    //   this.addToWishList(product);
-    //   this.inWishlist = true;
-    //   this._messageService.add({ severity: 'success', summary: 'Added', detail: 'Added to wishlist' })
-    // } else {
-    //   this.removedFromWishList(product);
-    //   this.inWishlist = false;
-    //   this._messageService.add({ severity: 'info', summary: 'Removed', detail: 'Removed from wishlist' })
-    // }
+    console.log("inWishList before action:", this.inWishlist.get(product.id));
+
+    const cardProduct: CardProduct = {
+      ...product,               // Spread the properties of Product
+      cover: product.pictures.length > 0 ? product.pictures[0] : { file: '', fileContentType: '', isCover: false },  // Set the first picture or a default
+    };
+    if (this.inWishlist.get(product.id)) {
+      this.removedFromWishList(cardProduct);
+      this.favouriteService.getIsProductInWishListSignal(product.id).set(State.Builder<boolean>().forSuccess(false)); // Update inCart status directly
+    } else {
+      this.addToWishList(cardProduct);
+      this.favouriteService.getIsProductInWishListSignal(product.id).set(State.Builder<boolean>().forSuccess(true)); // Update inCart status directly
+    }
   }
 
 
@@ -219,9 +184,7 @@ export class ProductDetailsComponent implements OnInit ,  OnDestroy {
     this.favouriteService.removeFromFavourites(product.id);
   }
 
-  checkIfInWishlist(product: Product) {
-    //return this._wishlistService.inWishlist(product.id);
-  }
+
 
   // Move to service
   // openProductDetails(id: number) {
@@ -263,12 +226,7 @@ export class ProductDetailsComponent implements OnInit ,  OnDestroy {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  // replaceProduct(id: number) {
-  //   const newProduct = this.relatedProducts.find((p) => p.id == id)
-  //   this.id = newProduct?.id;
-  //   //this.inWishlist = this.checkIfInWishlist(newProduct.id);
-  //   this.router.navigate(['/product', newProduct.id])
-  // }
+
 
   replaceProduct(newProductId: number): void {
     console.log('Replacing product with ID:', newProductId);
@@ -299,7 +257,9 @@ export class ProductDetailsComponent implements OnInit ,  OnDestroy {
     ).subscribe({
       next: productId => {
         if (productId !== null) {
+          this.currentProductId=productId;
           this.fetchProductDetails(productId);
+          this.checkProductInWishlist(productId);
           this.fetchRelatedProducts(productId);
         } else {
           this.toastService.send({
@@ -325,6 +285,17 @@ export class ProductDetailsComponent implements OnInit ,  OnDestroy {
 
   private fetchRelatedProducts(productId: number): void {
     this.productService.getRelatedProducts(this.pageRequest, productId);
+  }
+
+  private checkProductInWishlist(productId: number): void {
+    console.log("Checking if this product is in Favourite List:", productId);
+    this.favouriteService.checkProductInWishList(productId);
+  }
+
+
+  getButtonLikeCLass(productId: number): string{
+    const isInWishList: boolean|undefined= this.inWishlist.get(productId);
+    return isInWishList ? 'pi pi-heart-fill wishlist' : 'pi pi-heart';
   }
 
 
@@ -377,6 +348,28 @@ export class ProductDetailsComponent implements OnInit ,  OnDestroy {
       }
     });
   }
+
+  private listenCheckIfProductInWishList(): void {
+
+    effect(() => {
+      const itemStateSignal = this.favouriteService.getIsProductInWishListSignal(this.currentProductId);
+      const state = itemStateSignal();
+
+      if (state.status === "OK") {
+        this.inWishlist.set(this.currentProductId, state.value ?? false);
+        console.log("Product in wishlist:",this.currentProductId, state.value);
+      } else if (state.status === "ERROR") {
+        this.toastService.send({
+          severity: "error",
+          summary: "Error",
+          detail: "Failed to check product status",
+        });
+        console.error("Error fetching product in wishlist state");
+      }
+    });
+  }
+
+
 
   listenCartItemAddition() {
     effect(() => {
@@ -487,6 +480,8 @@ export class ProductDetailsComponent implements OnInit ,  OnDestroy {
       detail: "Couldn't remove the product from your WishList, please try again.",
     });
   }
+
+
 
 
 

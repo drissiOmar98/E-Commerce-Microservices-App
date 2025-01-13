@@ -46,7 +46,7 @@
                     *ngIf="myProduct" style="max-width: 450px;">
                 <p-tag class="m-1 tag" severity="danger" value="Excellent price" [rounded]="true"></p-tag>
                 <i class="favorite" (click)="addProductToWishList(myProduct)"
-                   [class]="inWishlist ? 'pi pi-heart-fill wishlist' : 'pi pi-heart'"></i>
+                   [class]="getButtonLikeCLass(myProduct.id)"></i>
                 <div class="align-self-start m-2 mt-5 px-2 flex flex-column">
                     <h2 class="font-bold">
                         {{ myProduct.name }}
