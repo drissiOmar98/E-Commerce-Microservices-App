@@ -82,9 +82,18 @@
                                 optionLabel="name"
                                 class="align-self-end"></p-dropdown>
                 </div>
-                <button (click)="buyProduct(myProduct)" class="p-button-outlined p-button-rounded w-full sm:w-10 mt-2 p-2"
-                        type="button" pButton pRipple label="Buy now" [disabled]="myProduct.availableQuantity === 0"></button>
-                <span class="text-blue-400 underline cursor-pointer mt-2" *ngIf="myProduct.availableQuantity === 0">Notify when
+            <button
+              (click)="buyProduct(myProduct)"
+              class="w-full sm:w-10 mt-2 p-2 d-flex align-items-center justify-content-center"
+              [ngClass]="getButtonBuyClass(myProduct.id)"
+              type="button"
+              pButton
+              pRipple
+              [disabled]="myProduct.availableQuantity === 0">
+              <i [class]="getButtonBuyIcon(myProduct.id)" style="margin-right: 0.3rem;"></i> <!-- Icon with slight margin -->
+              Buy now
+            </button>
+            <span class="text-blue-400 underline cursor-pointer mt-2" *ngIf="myProduct.availableQuantity === 0">Notify when
         available</span>
             </div>
         </div>

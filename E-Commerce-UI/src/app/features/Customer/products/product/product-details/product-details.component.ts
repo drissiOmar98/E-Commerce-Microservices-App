@@ -2,8 +2,7 @@ import {Component, effect, inject, OnDestroy, OnInit} from '@angular/core';
 import { ActivatedRoute, NavigationExtras, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { ProductsService } from '../../products.service';
-import { MenuItem, MessageService } from 'primeng/api';
-import { WishlistService } from 'src/app/shared/wishlist.service';
+import { MenuItem } from 'primeng/api';
 import {CardProduct, DisplayPicture, Product} from "../../../../Admin/model/product.model";
 import {ToastService} from "../../../../Admin/services/toast.service";
 import {ProductService} from "../../../../Admin/services/product.service";
@@ -33,6 +32,7 @@ export class ProductDetailsComponent implements OnInit ,  OnDestroy {
   emptySearch = false;
   loadingCreation = false;
   relatedProducts: CardProduct[] = [];
+  inCart: Map<number, boolean> = new Map();
   inWishlist: Map<number , boolean> = new Map();
   myProduct: Product | undefined;
   currentProductId!: number;
@@ -108,6 +108,7 @@ export class ProductDetailsComponent implements OnInit ,  OnDestroy {
     this.listenFavouriteItemAddition();
     this.listenFavouriteItemRemoval();
     this.listenCheckIfProductInWishList();
+    this.listenCheckIfProductInCart();
     const navigation = this.router.getCurrentNavigation();
     const state = navigation?.extras.state as { product: any };
   }
@@ -155,6 +156,26 @@ export class ProductDetailsComponent implements OnInit ,  OnDestroy {
     }
   }
 
+  buyProduct(product: Product) {
+    const cardProduct: CardProduct = {
+      ...product,               // Spread the properties of Product
+      cover: product.pictures.length > 0 ? product.pictures[0] : { file: '', fileContentType: '', isCover: false },  // Set the first picture or a default
+    };
+
+    if (this.inCart.get(product.id)) {
+      this.router.navigate(['/customer/cart'])
+      //this.removeFromCart(cardProduct)
+     // this.cartService.getIsProductInCartSignal(product.id).set(State.Builder<boolean>().forSuccess(false)); // Update inCart status directly
+    } else {
+      this.addToCart(cardProduct) // Emit event for addition
+      this.cartService.getIsProductInCartSignal(product.id).set(State.Builder<boolean>().forSuccess(true));
+      setTimeout(() => {
+        this.router.navigate(['/customer/cart']);
+      }, 2000);
+    }
+
+  }
+
 
 
 
@@ -186,26 +207,6 @@ export class ProductDetailsComponent implements OnInit ,  OnDestroy {
 
 
 
-  // Move to service
-  // openProductDetails(id: number) {
-  //   const product = {
-  //     name: this.product.name,
-  //     description: this.product.description,
-  //     subcategory: this.product.subcategory,
-  //     images: this.product.images,
-  //     EAN: this.product.EAN,
-  //     id,
-  //     inStock: this.product.inStock,
-  //     price: this.product.price
-  //   }
-  //
-  //   const navigationExtras: NavigationExtras = {
-  //     state: {
-  //       product
-  //     }
-  //   }
-  //   this.router.navigate(['/product', id], navigationExtras);
-  // }
 
 
   getInstallmentPayAmount(price: number, months: number): number {
@@ -234,10 +235,7 @@ export class ProductDetailsComponent implements OnInit ,  OnDestroy {
     this.fetchRelatedProducts(newProductId);
   }
 
-  buyProduct(product: Product) {
-    //this._cartService.addToCart(product);
-    this.router.navigate(['/cart'])
-  }
+
 
   imageClick(index: number) {
     this.activeIndex = index;
@@ -260,6 +258,7 @@ export class ProductDetailsComponent implements OnInit ,  OnDestroy {
           this.currentProductId=productId;
           this.fetchProductDetails(productId);
           this.checkProductInWishlist(productId);
+          this.checkProductInCart(productId);
           this.fetchRelatedProducts(productId);
         } else {
           this.toastService.send({
@@ -292,11 +291,25 @@ export class ProductDetailsComponent implements OnInit ,  OnDestroy {
     this.favouriteService.checkProductInWishList(productId);
   }
 
+  private checkProductInCart(productId: number): void {
+    console.log("Checking if product is in cart:", productId);
+    this.cartService.checkProductInCart(productId);
+  }
 
   getButtonLikeCLass(productId: number): string{
     const isInWishList: boolean|undefined= this.inWishlist.get(productId);
     return isInWishList ? 'pi pi-heart-fill wishlist' : 'pi pi-heart';
   }
+
+  getButtonBuyClass(productId: number): string {
+    const isInCart = this.inCart.get(productId); // Fetch the `inCart` status of the product
+    return isInCart ? 'p-button-rounded p-button-primary' : 'p-button-rounded p-button-outlined'; // Set the appropriate button class
+  }
+  getButtonBuyIcon(productId: number): string {
+    const isInCart = this.inCart.get(productId);
+    return isInCart ? 'pi pi-shopping-cart' : 'pi pi-cart-plus';
+  }
+
 
 
 
@@ -365,6 +378,23 @@ export class ProductDetailsComponent implements OnInit ,  OnDestroy {
           detail: "Failed to check product status",
         });
         console.error("Error fetching product in wishlist state");
+      }
+    });
+  }
+  private listenCheckIfProductInCart(): void {
+    effect(() => {
+      const productStateSignal = this.cartService.getIsProductInCartSignal(this.currentProductId);
+      const state = productStateSignal();  // Get the current state of the product
+
+      if (state.status === "OK") {
+        // Update the product inCart status immediately
+        this.inCart.set(this.currentProductId, state.value ?? false);  // Update the map with inCart status
+        console.log("Product in cart:", this.currentProductId, state.value);
+      } else if (state.status === "ERROR") {
+        this.toastService.send({
+          severity: "error", summary: "Error", detail: "Failed to check product status",
+        });
+        console.error("Error fetching product in cart state");
       }
     });
   }
