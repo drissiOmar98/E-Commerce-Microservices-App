@@ -1,23 +1,19 @@
 import {Component, effect, inject, OnDestroy, OnInit} from '@angular/core';
-import { Observable, of, filter } from 'rxjs';
+import {Observable, of, Subject, debounceTime, BehaviorSubject} from 'rxjs';
 import { Product } from './Product';
 import { ProductsService } from './products.service';
 import { SubscriptionContainer } from './SubscriptionContainer';
-import { MessageService } from 'primeng/api';
 import { MenuItem } from 'primeng/api';
 import { ActivatedRoute, Router } from '@angular/router';
-
-import {WishlistService} from "../../../shared/wishlist.service";
 import {ToastService} from "../../Admin/services/toast.service";
 import {ProductService} from "../../Admin/services/product.service";
-import {CardProduct, CreatedProduct, NewProduct} from "../../Admin/model/product.model";
+import {CardProduct} from "../../Admin/model/product.model";
 import {Pagination} from "../../../shared/model/request.model";
 import {CartService} from "../services/cart.service";
 import {State} from "../../../shared/model/state.model";
 import {Cart, CartItemRequest} from "../model/cart.model";
-import {NewProductPicture} from "../../Admin/model/picture.model";
 import {FavouriteService} from "../services/favourite.service";
-import {Favourite, favouriteRequest} from "../model/favourite.model";
+import {favouriteRequest} from "../model/favourite.model";
 
 
 @Component({
@@ -39,6 +35,8 @@ export class ProductsViewComponent implements OnInit, OnDestroy {
   emptySearch = false;
   loadingCreation = false;
 
+  private priceChange$ = new Subject<void>();
+
   newItemForMyCart: CartItemRequest = this.initializeNewItemToMyCart();
 
   initializeNewItemToMyCart() : CartItemRequest {
@@ -47,6 +45,11 @@ export class ProductsViewComponent implements OnInit, OnDestroy {
       quantity: 0
     };
   }
+
+  private priceFilterSubject = new Subject<[number, number]>(); // Subject for price filter changes
+  private priceFilterSubscription: any;
+  private filteredProductsState$ = new BehaviorSubject<any>(null);
+
 
 
 
@@ -65,7 +68,9 @@ export class ProductsViewComponent implements OnInit, OnDestroy {
   // Ordering by price
   priceFrom!: number;
   priceTo!: number;
-  rangeValues: number[] = [];
+  //rangeValues: number[] = [];
+  rangeValues: [number, number] = [0, 0]; // Default values for initial state
+
 
   highestPrice: number = 0;
   lowestPrice: number = 0;
@@ -81,11 +86,9 @@ export class ProductsViewComponent implements OnInit, OnDestroy {
 
   constructor(
     private _productService: ProductsService,
-    private _messageService: MessageService,
-    private _wishlistService: WishlistService,
-    //private _cartService: CartService,
   ) {
     this.listenToGetAllByCategory();
+    this.listenToFilterProductsByPrice();
     this.listenCartItemAddition();
     this.listenCartItemRemoval();
     this.listenFavouriteItemAddition();
@@ -101,28 +104,29 @@ export class ProductsViewComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.fetchProductsForCategory();
+    this.initializePriceFilterListener();
     // TODO: convert to data stream -> put in constructor
-    this.subs.add(this._productService.getProducts("asc", this.categoriesFilter).subscribe((products: any) => {
-      this.products$ = of(products.data.product);
-      this.numberOfProducts = products.data.product.length;
-      this.isLoading = false;
-
-      const sortedPrices = [...products.data.product].sort((productA: any, productB: any) => (productA.price - productB.price))
-
-      this.highestPrice = sortedPrices[0].price
-      this.lowestPrice = sortedPrices.at(-1).price;
-      this.rangeValues = [this.highestPrice, this.lowestPrice];
-
-      products.data.product.forEach((product: Product) => {
-        if (product.price > this.highestPrice) {
-          this.highestPrice = product.price;
-        }
-
-        if (product.price < this.lowestPrice) {
-          this.lowestPrice = product.price;
-        }
-      });
-    }));
+    // this.subs.add(this._productService.getProducts("asc", this.categoriesFilter).subscribe((products: any) => {
+    //   this.products$ = of(products.data.product);
+    //   this.numberOfProducts = products.data.product.length;
+    //   this.isLoading = false;
+    //
+    //   const sortedPrices = [...products.data.product].sort((productA: any, productB: any) => (productA.price - productB.price))
+    //
+    //   this.highestPrice = sortedPrices[0].price
+    //   this.lowestPrice = sortedPrices.at(-1).price;
+    //   this.rangeValues = [this.highestPrice, this.lowestPrice];
+    //
+    //   products.data.product.forEach((product: Product) => {
+    //     if (product.price > this.highestPrice) {
+    //       this.highestPrice = product.price;
+    //     }
+    //
+    //     if (product.price < this.lowestPrice) {
+    //       this.lowestPrice = product.price;
+    //     }
+    //   });
+    // }));
 
     this.subs.add(this._productService.getProductCategories().subscribe((categories: any) => {
       this.categories = categories.data.category;
@@ -199,13 +203,13 @@ export class ProductsViewComponent implements OnInit, OnDestroy {
     this.router.navigate(['/product', id]);
   }
 
-  handlePriceFilter(event: any) {
-    this.priceFrom = event.values[0]
-    this.priceTo = event.values[1]
-    this.subs.add(this._productService.getProductsByPrice(this.priceFrom, this.priceTo).subscribe((products: any) => {
-      this.products$ = of(products.data.product);
-    }))
-  }
+  // handlePriceFilter(event: any) {
+  //   this.priceFrom = event.values[0]
+  //   this.priceTo = event.values[1]
+  //   this.subs.add(this._productService.getProductsByPrice(this.priceFrom, this.priceTo).subscribe((products: any) => {
+  //     this.products$ = of(products.data.product);
+  //   }))
+  // }
 
   addToCart(product: CardProduct) {
     this.loadingCreation = true;
@@ -247,9 +251,13 @@ export class ProductsViewComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.subs?.dispose()
     this.productService.resetGetAllCategory();
+    this.productService.resetGetProductsByPrice();
     this.cartService.resetAddItemState();
     this.favouriteService.resetAddToFavouritesState();
     this.favouriteService.resetRemoveFromFavouritesState();
+    if (this.priceFilterSubscription) {
+      this.priceFilterSubscription.unsubscribe();
+    }
   }
 
   /**
@@ -300,6 +308,10 @@ export class ProductsViewComponent implements OnInit, OnDestroy {
       if (categoryProductsState.status === "OK") {
         this.products = categoryProductsState.value?.content;
         console.log('Products:', this.products);
+        // Calculate price range if products exist
+        if (this.products && this.products.length > 0) {
+          this.calculatePriceRange(this.products);
+        }
         this.loading = false;
         this.emptySearch = false;
       } else if (categoryProductsState.status === "ERROR") {
@@ -311,6 +323,63 @@ export class ProductsViewComponent implements OnInit, OnDestroy {
       }
     });
   }
+  /**
+   * Listens to price filter state changes and updates the product list accordingly.
+   */
+
+  // private listenToFilterProductsByPrice(): void {
+  //   effect(() => {
+  //     const filterProductsByPriceState = this.productService.filterProductsByPriceRangeSig();
+  //
+  //     if (filterProductsByPriceState.status === 'OK') {
+  //       this.products = filterProductsByPriceState.value?.content || [];
+  //       console.log('Filtered Products:', this.products);
+  //
+  //       this.isLoading = false;
+  //       this.emptySearch = this.products.length === 0;
+  //     } else if (filterProductsByPriceState.status === 'ERROR') {
+  //       this.toastService.send({
+  //         severity: 'error',
+  //         detail: 'Error fetching products by price range',
+  //         summary: 'Error',
+  //       });
+  //
+  //       this.isLoading = false;
+  //       this.emptySearch = true;
+  //     }
+  //   });
+  // }
+
+  private listenToFilterProductsByPrice(): void {
+    // Watch for signal updates and push to BehaviorSubject
+    effect(() => {
+      const filterProductsByPriceState = this.productService.filterProductsByPriceRangeSig();
+      this.filteredProductsState$.next(filterProductsByPriceState);
+    });
+
+    // Handle debounced state updates
+    this.filteredProductsState$
+      .pipe(debounceTime(300)) // Debounce state processing
+      .subscribe((state) => {
+        if (!state) return;
+
+        if (state.status === 'OK') {
+          this.products = state.value?.content || [];
+          this.isLoading = false;
+          this.emptySearch = this.products?.length === 0;
+        } else if (state.status === 'ERROR') {
+          this.toastService.send({
+            severity: 'error',
+            detail: 'Error fetching products by price range',
+            summary: 'Error',
+          });
+          this.isLoading = false;
+          this.emptySearch = true;
+        }
+      });
+  }
+
+
 
   listenCartItemAddition() {
     effect(() => {
@@ -423,6 +492,70 @@ export class ProductsViewComponent implements OnInit, OnDestroy {
       detail: "Couldn't remove the product from your WishList, please try again.",
     });
   }
+
+
+
+  /**
+   * Calculates the lowest and highest prices from the product list and updates the range values.
+   * @param products - Array of products to compute the price range from.
+   */
+  // private calculatePriceRange(products: Array<CardProduct>): void {
+  //   const sortedPrices = [...products].sort((a, b) => a.price - b.price);
+  //
+  //   this.lowestPrice = sortedPrices[0].price;
+  //   this.highestPrice = sortedPrices[sortedPrices.length - 1].price;
+  //   this.rangeValues = [this.lowestPrice, this.highestPrice];
+  //
+  //   console.log('Price Range:', { lowestPrice: this.lowestPrice, highestPrice: this.highestPrice });
+  // }
+  private calculatePriceRange(products: Array<CardProduct>): void {
+    if (products.length > 0) {
+      const sortedPrices = [...products].sort((a, b) => a.price - b.price);
+
+      this.lowestPrice = sortedPrices[0].price;
+      this.highestPrice = sortedPrices[sortedPrices.length - 1].price;
+
+      // Ensure it always sets the tuple `[number, number]`
+      this.rangeValues = [this.lowestPrice, this.highestPrice];
+
+      console.log('Price Range:', { lowestPrice: this.lowestPrice, highestPrice: this.highestPrice });
+    } else {
+      // Handle empty product list if needed
+      console.log("No products available to calculate the price range.");
+    }
+  }
+
+
+  // private handlePriceFilter(): void {
+  //   const [minPrice, maxPrice] = this.rangeValues;         // Extract range values
+  //   this.productService.filterProductsByPriceRange(minPrice, maxPrice, this.pageRequest);
+  //   this.isLoading = true;  // Optionally show a loading spinner
+  // }
+  //
+  // public onPriceFilterChange(): void {
+  //   this.handlePriceFilter();
+  // }
+
+
+  // Listen to changes and debounce filter calls
+  private initializePriceFilterListener(): void {
+    this.priceFilterSubscription = this.priceFilterSubject
+      .pipe(debounceTime(300)) // Wait for 300ms of inactivity
+      .subscribe(([minPrice, maxPrice]) => {
+        this.isLoading = true; // Start loading
+        this.productService.filterProductsByPriceRange(minPrice, maxPrice, this.pageRequest);
+      });
+  }
+
+
+
+  public onPriceFilterChange(): void {
+    this.priceFilterSubject.next([...this.rangeValues]); // Emit updated range values
+  }
+
+
+
+
 
 
 

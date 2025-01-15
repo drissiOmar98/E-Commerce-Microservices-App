@@ -2,22 +2,50 @@
 <p-breadcrumb [home]="home" [model]="items" styleClass="w-full"></p-breadcrumb>
 
 <div class="flex flex-column md:flex-row align-items-start justify-content-center mt-3">
-  <div class="bg-gray-50 border-round-md py-0 mx-0 w-full md:px-0 md:w-0 lg:w-2" *ngIf="!isLoading;else loadingFilters">
+  <div class="bg-gray-50 border-round-md py-0 mx-0 w-full md:px-0 md:w-0 lg:w-2" *ngIf="!isLoading; else loadingFilters">
     <app-filters (filtersObject)="applyFilters($event)" [categories]="categories"></app-filters>
     <div class="flex flex-column align-items-center my-1 py-3">
-      <p-inputNumber class="mb-2 w-full" [(ngModel)]="rangeValues[0]" (ngModelChange)="onPriceChange($event)" mode="currency"
-        inputId="currency" currency="RSD" locale="en-US">
+      <p-inputNumber class="mb-2 w-full" [(ngModel)]="rangeValues[0]" (ngModelChange)="onPriceFilterChange()"
+                     mode="currency"
+                     inputId="currency"
+                     currency="USD"
+                     locale="en-US">
       </p-inputNumber>
-      <p-inputNumber class="mb-2 w-full" [(ngModel)]="rangeValues[1]" (ngModelChange)="onPriceChange($event)" mode="currency"
-        inputId="currency" currency="RSD" locale="en-US">
+
+      <p-inputNumber class="mb-2 w-full" [(ngModel)]="rangeValues[1]" (ngModelChange)="onPriceFilterChange()"
+                     mode="currency"
+                     inputId="currency"
+                     currency="USD"
+                     locale="en-US">
       </p-inputNumber>
+
       <h5 class="font-medium mt-3 py-1 text-center">
-        Price range: {{(rangeValues[0] | number) + ' - ' + (rangeValues[1] | number)}} RSD
+        Price range: {{(rangeValues[0] | number) + ' - ' + (rangeValues[1] | number)}}&nbsp;<fa-icon icon="dollar-sign" class="dollar"></fa-icon>
       </h5>
     </div>
+
+    <!-- Price Range Slider -->
     <p-slider [(ngModel)]="rangeValues" [range]="true" [min]="lowestPrice" [max]="highestPrice" [animate]="true"
-      (onSlideEnd)="handlePriceFilter($event)" class="w-full sm:w-11/12 md:w-full"></p-slider>
+              (onSlideEnd)="onPriceFilterChange()" class="w-full sm:w-11/12 md:w-full">
+    </p-slider>
+
   </div>
+<!--  <div class="bg-gray-50 border-round-md py-0 mx-0 w-full md:px-0 md:w-0 lg:w-2" *ngIf="!isLoading;else loadingFilters">-->
+<!--    <app-filters (filtersObject)="applyFilters($event)" [categories]="categories"></app-filters>-->
+<!--    <div class="flex flex-column align-items-center my-1 py-3">-->
+<!--      <p-inputNumber class="mb-2 w-full" [(ngModel)]="rangeValues[0]" (ngModelChange)="onPriceChange($event)" mode="currency"-->
+<!--        inputId="currency" currency="RSD" locale="en-US">-->
+<!--      </p-inputNumber>-->
+<!--      <p-inputNumber class="mb-2 w-full" [(ngModel)]="rangeValues[1]" (ngModelChange)="onPriceChange($event)" mode="currency"-->
+<!--        inputId="currency" currency="RSD" locale="en-US">-->
+<!--      </p-inputNumber>-->
+<!--      <h5 class="font-medium mt-3 py-1 text-center">-->
+<!--        Price range: {{(rangeValues[0] | number) + ' - ' + (rangeValues[1] | number)}}&nbsp;<fa-icon icon="dollar-sign" class="dollar"></fa-icon>-->
+<!--      </h5>-->
+<!--    </div>-->
+<!--    <p-slider [(ngModel)]="rangeValues" [range]="true" [min]="lowestPrice" [max]="highestPrice" [animate]="true"-->
+<!--      (onSlideEnd)="handlePriceFilter($event)" class="w-full sm:w-11/12 md:w-full"></p-slider>-->
+<!--  </div>-->
   <ng-template #loadingFilters>
     <div class="bg-gray-50 border-round-md py-0 mx-0 w-full md:px-0 md:w-0 lg:w-2">
       <p-skeleton height="3rem" width="100%" styleClass="mb-2"></p-skeleton>

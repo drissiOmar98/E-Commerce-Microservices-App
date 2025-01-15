@@ -27,6 +27,10 @@ export class ProductService {
   private getProductById$: WritableSignal<State<Product>> = signal(State.Builder<Product>().forInit());
   getProductByIdSig = computed(()=> this.getProductById$());
 
+  private filterProductsByPriceRange$ : WritableSignal<State<Page<CardProduct>>>
+    = signal(State.Builder<Page<CardProduct>>().forInit());
+  filterProductsByPriceRangeSig = computed(() => this.filterProductsByPriceRange$());
+
 
 
 
@@ -101,6 +105,21 @@ export class ProductService {
       });
   }
 
+  filterProductsByPriceRange(minPrice: number, maxPrice: number, pageRequest: Pagination): void {
+    // Set the base HttpParams using the pagination options
+    let params = createPaginationOption(pageRequest);
+    params = params.append('minPrice', minPrice.toString());
+    params = params.append('maxPrice', maxPrice.toString());
+
+    this.http.get<Page<CardProduct>>(`${environment.API_URL}/products/filter-by-price-range`, { params })
+      .subscribe({
+        next: (products) => this.filterProductsByPriceRange$.set(State.Builder<Page<CardProduct>>().forSuccess(products)),
+        error: (error) => {
+          this.filterProductsByPriceRange$.set(State.Builder<Page<CardProduct>>().forError(error));
+        }
+      });
+  }
+
 
 
   getProductById(productId: number): void {
@@ -116,6 +135,10 @@ export class ProductService {
    */
   resetGetAllCategory(): void {
     this.getAllByCategory$.set(State.Builder<Page<CardProduct>>().forInit())
+  }
+
+  resetGetProductsByPrice():void {
+    this.filterProductsByPriceRange$.set(State.Builder<Page<CardProduct>>().forInit());
   }
 
   resetGetRelatedProducts():void{
