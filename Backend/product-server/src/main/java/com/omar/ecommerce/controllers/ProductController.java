@@ -21,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
@@ -137,6 +138,32 @@ public class ProductController {
             Pageable pageable) {
         Page<DisplayCardProductDTO> relatedProducts = productService.findRelatedProducts(productId, pageable);
         return ResponseEntity.ok(relatedProducts);
+    }
+
+    /**
+     * Filter products by price range.
+     *
+     * @param pageable  Pagination details (page, size, and sort).
+     * @param minPrice  Minimum price for the filter.
+     * @param maxPrice  Maximum price for the filter.
+     * @return A paginated list of DisplayCardProductDTO filtered by price range.
+     */
+    @GetMapping("/filter-by-price-range")
+    public ResponseEntity<Page<DisplayCardProductDTO>> filterProductsByPriceRange(
+            Pageable pageable,
+            @RequestParam("minPrice") BigDecimal minPrice,
+            @RequestParam("maxPrice") BigDecimal maxPrice
+    ) {
+        if (minPrice.compareTo(BigDecimal.ZERO) < 0 || maxPrice.compareTo(BigDecimal.ZERO) < 0) {
+            return ResponseEntity.badRequest().body(Page.empty());
+        }
+
+        if (minPrice.compareTo(maxPrice) > 0) {
+            return ResponseEntity.badRequest().body(Page.empty());
+        }
+
+        Page<DisplayCardProductDTO> filteredProducts = productService.filterProductsByPriceRange(pageable, minPrice, maxPrice);
+        return ResponseEntity.ok(filteredProducts);
     }
 
 
