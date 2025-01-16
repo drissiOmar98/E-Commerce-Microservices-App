@@ -1,10 +1,10 @@
 import {computed, inject, Injectable, signal, WritableSignal} from '@angular/core';
 import {HttpClient} from "@angular/common/http";
 import {State} from "../../../shared/model/state.model";
-import {CardProduct, CreatedProduct, NewProduct, Product} from "../model/product.model";
+import {CardProduct, CreatedProduct, NewProduct, Product, SearchQuery} from "../model/product.model";
 import {environment} from "../../../../environments/environment";
-import {createPaginationOption, Page, Pagination} from "../../../shared/model/request.model";
-import {SubCategoryResponse} from "../model/subcategory.model";
+import {createPaginationOption, emptyPage, Page, Pagination} from "../../../shared/model/request.model";
+import {catchError, debounce, distinctUntilChanged, Observable, of, Subject, switchMap, timer} from "rxjs";
 
 @Injectable({
   providedIn: 'root'
@@ -30,6 +30,12 @@ export class ProductService {
   private filterProductsByPriceRange$ : WritableSignal<State<Page<CardProduct>>>
     = signal(State.Builder<Page<CardProduct>>().forInit());
   filterProductsByPriceRangeSig = computed(() => this.filterProductsByPriceRange$());
+
+
+
+  private searchQuery$ = new Subject<SearchQuery>();
+  private searchResult$ =  new Subject<State<Page<CardProduct>>>();
+  searchResult = this.searchResult$.asObservable();
 
 
 
@@ -130,6 +136,34 @@ export class ProductService {
       });
   }
 
+  private listenToSearch(): void {
+    this.searchQuery$.pipe(
+      distinctUntilChanged(),
+      debounce(() => timer(300)),
+      switchMap(query => this.fetchResult(query).pipe(
+        catchError(err => {
+          this.searchResult$.next(State.Builder<Page<CardProduct>>().forError(err));
+          return of(emptyPage<CardProduct>());
+        })
+      ))
+    ).subscribe({
+      next: products => this.searchResult$.next(State.Builder<Page<CardProduct>>().forSuccess(products)),
+      error: err => this.searchResult$.next(State.Builder<Page<CardProduct>>().forError(err))
+    });
+  }
+
+  private fetchResult(searchQuery: SearchQuery): Observable<Page<CardProduct>> {
+    let params = createPaginationOption(searchQuery.page);
+    params = params.set("query", searchQuery.query);
+    return this.http.get<Page<CardProduct>>(`${environment.API_URL}/products/search`, {params});
+  }
+
+  search(searchQuery: SearchQuery): void {
+    this.searchQuery$.next(searchQuery);
+  }
+
+
+
   /**
    * Reset the "get all products by category" state.
    */
@@ -153,5 +187,7 @@ export class ProductService {
 
 
 
-  constructor() { }
+  constructor() {
+    this.listenToSearch();
+  }
 }

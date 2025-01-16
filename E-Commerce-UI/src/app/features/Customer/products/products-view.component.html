@@ -67,8 +67,8 @@
         <div class="flex flex-column sm:flex-row align-items-center justify-content-between">
           <span class="p-input-icon-left w-full sm:w-auto mb-2 sm:mb-0">
             <i class="pi pi-search"></i>
-            <input class="w-full" type="text" pInputText (ngModelChange)="onChanges($event)"
-              [(ngModel)]="searchInput" placeholder="Search">
+             <input class="w-full" type="text" pInputText (ngModelChange)="onQueryChange($event)"
+                    [(ngModel)]="query" placeholder="Search Product">
           </span>
           <div class="flex flex-column sm:flex-row w-full sm:w-auto">
             <p-dropdown class="w-full sm:w-auto mb-2 sm:mb-0 sm:mr-2" [options]="sortOptions" [(ngModel)]="sortKey" placeholder="Sort By"

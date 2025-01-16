@@ -28,7 +28,7 @@
         {{ productX().description | slice:0:50 }}{{ productX().description.length > 50 ? '...' : '' }}
       </span>
       <span class="block text-xs sm:text-sm mb-2 text-center">{{ productX().subcategoryName }}</span>
-      <p class="text-base sm:text-lg font-bold mb-2 text-center">{{ productX().price | number }} RSD</p>
+      <p class="text-base sm:text-lg font-bold mb-2 text-center">{{ productX().price | number }} &nbsp;<fa-icon icon="dollar-sign" class="dollar"></fa-icon></p>
       <span *ngIf="productX().availableQuantity !== 0; else notInStock"
             class="text-xs sm:text-sm block mb-2 text-green-500 text-center">{{ productX().availableQuantity }} items available</span>
       <ng-template #notInStock>
@@ -78,8 +78,8 @@
             <span class="text-green-500 text-sm align-self-center md:align-self-auto" *ngIf="productX().availableQuantity > 1">{{ productX().availableQuantity }} items available</span>
             <span class="text-green-500 text-sm align-self-center md:align-self-auto" *ngIf="productX().availableQuantity=== 1">{{ productX().availableQuantity }} item available</span>
             <span *ngIf="productX().availableQuantity === 0" class="text-red-500 text-sm align-self-center md:align-self-auto">Not available</span>
-            <h2 class="font-medium text-lg md:text-xl mb-1">{{ productX().price | number }} RSD</h2>
-            <span class="text-sm">or 12 x {{ getInstallmentPayAmount(productX().price) | number }} RSD / month</span>
+            <h2 class="font-medium text-lg md:text-xl mb-1">{{ productX().price | number }} &nbsp;<fa-icon icon="dollar-sign" class="dollar"></fa-icon></h2>
+            <span class="text-sm">or 12 x {{ getInstallmentPayAmount(productX().price) | number }} &nbsp;<fa-icon icon="dollar-sign" class="dollar"></fa-icon>/ month</span>
           </div>
 
           <p-button (click)="productX().availableQuantity > 0 && addRemoveCartItem(productX())"

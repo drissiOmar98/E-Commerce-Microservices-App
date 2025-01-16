@@ -1,5 +1,5 @@
 import {Component, effect, inject, OnDestroy, OnInit} from '@angular/core';
-import {Observable, of, Subject, debounceTime, BehaviorSubject} from 'rxjs';
+import {Observable, of, Subject, debounceTime, BehaviorSubject, Subscription} from 'rxjs';
 import { Product } from './Product';
 import { ProductsService } from './products.service';
 import { SubscriptionContainer } from './SubscriptionContainer';
@@ -7,8 +7,8 @@ import { MenuItem } from 'primeng/api';
 import { ActivatedRoute, Router } from '@angular/router';
 import {ToastService} from "../../Admin/services/toast.service";
 import {ProductService} from "../../Admin/services/product.service";
-import {CardProduct} from "../../Admin/model/product.model";
-import {Pagination} from "../../../shared/model/request.model";
+import {CardProduct, SearchQuery} from "../../Admin/model/product.model";
+import {Page, Pagination} from "../../../shared/model/request.model";
 import {CartService} from "../services/cart.service";
 import {State} from "../../../shared/model/state.model";
 import {Cart, CartItemRequest} from "../model/cart.model";
@@ -29,8 +29,10 @@ export class ProductsViewComponent implements OnInit, OnDestroy {
   favouriteService= inject(FavouriteService);
   activatedRoute = inject(ActivatedRoute);
   router = inject(Router);
-  products: Array<CardProduct> | undefined;
-  pageRequest: Pagination = {size: 20, page: 0, sort: []};
+  //products: Array<CardProduct> | undefined;
+  products: Array<CardProduct> | undefined = [];  // Array to store the products
+  productsResults: Page<CardProduct> | undefined = undefined;  // For search results as Page structure
+  pageRequest: Pagination = {size: 20, page: 0, sort: ["name", "ASC"]};
   loading = false;
   emptySearch = false;
   loadingCreation = false;
@@ -50,6 +52,10 @@ export class ProductsViewComponent implements OnInit, OnDestroy {
   private priceFilterSubscription: any;
   private filteredProductsState$ = new BehaviorSubject<any>(null);
 
+  public query = "";
+  searchPage: Pagination = { page: 0, size: 20, sort: ["name", "ASC"] }
+  loadingSearch = true;
+  searchSubscription: Subscription | undefined;
 
 
 
@@ -105,6 +111,7 @@ export class ProductsViewComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.fetchProductsForCategory();
     this.initializePriceFilterListener();
+    this.initSearchResultListener();
     // TODO: convert to data stream -> put in constructor
     // this.subs.add(this._productService.getProducts("asc", this.categoriesFilter).subscribe((products: any) => {
     //   this.products$ = of(products.data.product);
@@ -145,13 +152,8 @@ export class ProductsViewComponent implements OnInit, OnDestroy {
     ];
   }
 
-  // Search filtering
-  onChanges(changes: any) {
-    this.searchInput = changes;
-    this.subs.add(this._productService.searchProducts(changes).subscribe((product: any) => {
-      this.products$ = of(product.data.product);
-    }))
-  }
+
+
 
   trackByProductId(index: number, product: Product): number {
     return index;
@@ -257,6 +259,9 @@ export class ProductsViewComponent implements OnInit, OnDestroy {
     this.favouriteService.resetRemoveFromFavouritesState();
     if (this.priceFilterSubscription) {
       this.priceFilterSubscription.unsubscribe();
+    }
+    if (this.searchSubscription) {
+      this.searchSubscription.unsubscribe();
     }
   }
 
@@ -551,6 +556,38 @@ export class ProductsViewComponent implements OnInit, OnDestroy {
 
   public onPriceFilterChange(): void {
     this.priceFilterSubject.next([...this.rangeValues]); // Emit updated range values
+  }
+
+  initSearchResultListener(): void {
+    this.searchSubscription = this.productService.searchResult
+      .subscribe(productsState => {
+        if (productsState.status === "OK" && productsState.value) {
+          this.productsResults = productsState.value;  // Full Page structure (with content, metadata)
+          this.products = productsState.value.content; // Extract the product list directly here
+        } else if (productsState.status === "ERROR") {
+          this.toastService.send({
+            severity: 'error',
+            summary: 'Error',
+            detail: "Error occured when fetching search result, please try again",
+          });
+        }
+        this.loadingSearch = false;
+      });
+    const searchQuery: SearchQuery = {
+      query: "",
+      page: this.searchPage
+    }
+    this.productService.search(searchQuery);
+  }
+
+  // Search filtering
+  onQueryChange(newQuery: string): void {
+    this.loadingSearch = true;
+    const searchQuery: SearchQuery = {
+      query: newQuery,
+      page: this.searchPage,
+    }
+    this.productService.search(searchQuery);
   }
 
 

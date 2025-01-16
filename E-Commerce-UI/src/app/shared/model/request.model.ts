@@ -46,3 +46,38 @@ export const createPaginationOption = (req: Pagination): HttpParams => {
 
   return params;
 };
+
+/**
+ * Utility function to create an empty Page<T> object.
+ * Useful for handling error scenarios or providing default values.
+ */
+export const emptyPage = <T>(): Page<T> => {
+  return {
+    content: [],
+    pageable: {
+      pageNumber: 0,
+      pageSize: 0,
+      offset: 0,
+      paged: false,
+      unpaged: true,
+      sort: {
+        empty: true,
+        sorted: false,
+        unsorted: true,
+      },
+    },
+    last: true,
+    totalElements: 0,
+    totalPages: 0,
+    sort: {
+      empty: true,
+      sorted: false,
+      unsorted: true,
+    },
+    number: 0,
+    size: 0,
+    first: true,
+    numberOfElements: 0,
+    empty: true,
+  };
+};
