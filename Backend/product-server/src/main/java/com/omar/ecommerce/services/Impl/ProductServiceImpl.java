@@ -206,6 +206,12 @@ public class ProductServiceImpl implements ProductService {
         return relatedProductsPage.map(productMapper::productToDisplayCardProductDTO);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Page<DisplayCardProductDTO> searchProducts(Pageable pageable, String query) {
+        Page<Product> products = productRepository.searchProducts(pageable, query);
+        return products.map(productMapper::productToDisplayCardProductDTO);
+    }
 
 
 //    @Override

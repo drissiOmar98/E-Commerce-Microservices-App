@@ -40,4 +40,6 @@ public interface ProductService {
     DisplayCardProductDTO getProductDetailsWithCover(Integer productId);
 
     public Page<DisplayCardProductDTO> findRelatedProducts(Integer productId, Pageable pageable);
+
+    public Page<DisplayCardProductDTO> searchProducts(Pageable pageable,String query);
 }

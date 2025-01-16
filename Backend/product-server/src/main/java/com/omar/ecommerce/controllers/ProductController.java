@@ -210,10 +210,6 @@ public class ProductController {
     }
 
 
-
-
-
-
     @GetMapping("/get-one/{productId}")
     public ResponseEntity<DisplayProductDTO> getOne(@PathVariable Integer productId) {
         State<DisplayProductDTO, String> displayProductState = productService.getOne(productId);
@@ -229,6 +225,12 @@ public class ProductController {
     public ResponseEntity<DisplayCardProductDTO> getProductDetailsById(@PathVariable Integer id) {
         DisplayCardProductDTO productDetails = productService.getProductDetailsWithCover(id);
         return ResponseEntity.ok(productDetails);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<Page<DisplayCardProductDTO>> searchProducts(@RequestParam String query,
+                                                                      Pageable pageable) {
+        return ResponseEntity.ok(productService.searchProducts(pageable, query));
     }
 
 }

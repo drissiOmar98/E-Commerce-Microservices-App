@@ -95,4 +95,15 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
 
 
 
+    @Query("SELECT p FROM Product p " +
+            "LEFT JOIN FETCH p.pictures pic " +
+            "WHERE pic.isCover = true " +
+            "AND (LOWER(p.name) LIKE LOWER(CONCAT('%', :query, '%')) " +
+            "OR LOWER(p.category.name) LIKE LOWER(CONCAT('%', :query, '%')) " +
+            "OR LOWER(p.subcategory.name) LIKE LOWER(CONCAT('%', :query, '%')))")
+    Page<Product> searchProducts(Pageable pageable, @Param("query") String query);
+
+
+
+
 }
