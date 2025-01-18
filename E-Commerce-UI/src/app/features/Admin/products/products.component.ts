@@ -9,8 +9,9 @@ import {DialogService, DynamicDialogRef} from "primeng/dynamicdialog";
 import {AddproductComponent} from "./addproduct/addproduct.component";
 import {ToastService} from "../services/toast.service";
 import {ProductService} from "../services/product.service";
-import {CardProduct} from "../model/product.model";
-import {Pagination} from "../../../shared/model/request.model";
+import {CardProduct, SearchQuery} from "../model/product.model";
+import {Page, Pagination} from "../../../shared/model/request.model";
+import {Subscription} from "rxjs";
 
 
 
@@ -24,10 +25,23 @@ export class ProductsComponent implements OnInit , OnDestroy  {
   activatedRoute = inject(ActivatedRoute);
   toastService = inject(ToastService);
   productService= inject(ProductService);
+  fullProductList: Array<CardProduct> = [];  // Store all products, unfiltered
   products: Array<CardProduct> | undefined = [];  // Array to store the products
+  productsResults: Page<CardProduct> | undefined = undefined;  // For search results as Page structure
   pageRequest: Pagination = {size: 20, page: 0, sort: ["name", "ASC"]};
   loading = false;
   emptySearch = false;
+
+
+  public query = "";
+  searchPage: Pagination = { page: 0, size: 20, sort: ["name", "ASC"] }
+  loadingSearch = true;
+  searchSubscription: Subscription | undefined;
+
+  // Global array to keep track of all distinct categories
+  private allCategories: Set<number> = new Set();
+  private categoryMap: Map<number, string> = new Map(); // To store categoryId and name pairs
+
 
   ref: DynamicDialogRef | undefined;
 
@@ -67,40 +81,7 @@ export class ProductsComponent implements OnInit , OnDestroy  {
     },
   ];
 
-  categoryOptions: SelectItem[] = [
-    {
-      label: 'Headphone',
-      value: 'headphone',
-    },
-    {
-      label: 'Wearable',
-      value: 'wearable',
-    },
-    {
-      label: 'Laptop',
-      value: 'laptop',
-    },
-    {
-      label: 'Smarthome',
-      value: 'smarthome',
-    },
-    {
-      label: 'Tablet',
-      value: 'tablet',
-    },
-    {
-      label: 'Mobile',
-      value: 'mobile',
-    },
-    {
-      label: 'Monitor',
-      value: 'monitor',
-    },
-    {
-      label: 'All',
-      value: 'all',
-    },
-  ];
+  categoryOptions: any[] = []; // For storing category options dynamically
 
   sortOptions: SelectItem[] = [
     {
@@ -127,25 +108,10 @@ export class ProductsComponent implements OnInit , OnDestroy  {
       label: 'Quantity Low to High',
       value: 'quantity',
     },
-    {
-      label: 'Sold High to Low',
-      value: '!sold',
-    },
-    {
-      label: 'Sold Low to High',
-      value: 'sold',
-    },
-    {
-      label: 'Revenue High to Low',
-      value: '!revenue',
-    },
-    {
-      label: 'Revenue Low to High',
-      value: 'revenue',
-    },
   ];
 
   selectedStatus: string = 'all';
+  selectedSort: string = 'salePrice';
   selectedCategory: string = 'all';
   sortOrder: number = 0;
   sortField: string = '';
@@ -192,31 +158,31 @@ export class ProductsComponent implements OnInit , OnDestroy  {
   //   table.filter((event.target as HTMLInputElement).value, 'status', 'contains');
   // }
 
-  onSortChange(event: any) {
-    const value = event.value;
+  // onSortChange(event: any) {
+  //   const value = event.value;
+  //
+  //   if (value.indexOf('!') === 0) {
+  //     this.sortOrder = -1;
+  //     this.sortField = value.substring(1, value.length);
+  //   } else {
+  //     this.sortOrder = 1;
+  //     this.sortField = value;
+  //   }
+  //
+  //   this.applyFilters();
+  // }
 
-    if (value.indexOf('!') === 0) {
-      this.sortOrder = -1;
-      this.sortField = value.substring(1, value.length);
-    } else {
-      this.sortOrder = 1;
-      this.sortField = value;
-    }
+  // onStatusChange(event: any) {
+  //   this.selectedStatus = event.value;
+  //
+  //   this.applyFilters();
+  // }
 
-    this.applyFilters();
-  }
-
-  onStatusChange(event: any) {
-    this.selectedStatus = event.value;
-
-    this.applyFilters();
-  }
-
-  onCategoryChange(event: any) {
-    this.selectedCategory = event.value;
-
-    this.applyFilters();
-  }
+  // onCategoryChange(event: any) {
+  //   this.selectedCategory = event.value;
+  //
+  //   this.applyFilters();
+  // }
 
   applyFilters() {
     this.filteredproducts$ = this.products$;
@@ -274,6 +240,7 @@ export class ProductsComponent implements OnInit , OnDestroy  {
 
   ngOnInit() {
     this.fetchProductsForCategory();
+    this.initSearchResultListener();
     const navigation = this.router.getCurrentNavigation();
     const state = navigation?.extras?.state as {
       message: string;
@@ -290,6 +257,9 @@ export class ProductsComponent implements OnInit , OnDestroy  {
   }
   ngOnDestroy() {
     this.productService.resetGetAllCategory();
+    if (this.searchSubscription) {
+      this.searchSubscription.unsubscribe();
+    }
   }
 
 
@@ -325,23 +295,181 @@ export class ProductsComponent implements OnInit , OnDestroy  {
     });
   }
 
-
   private listenToGetAllByCategory() {
     effect(() => {
       const categoryProductsState = this.productService.getAllByCategorySig();
-      if (categoryProductsState.status === "OK") {
-        this.products = categoryProductsState.value?.content;
+      if (categoryProductsState.status === 'OK') {
+        this.fullProductList = categoryProductsState.value?.content || [];  // Save unfiltered products list
+        this.products = [...this.fullProductList];  // Initially, assign the full product list to products
+        this.filterAndSortProducts();  // Apply all filters and sorting
+        this.extractCategories(this.products); // Extract categories dynamically
         this.loading = false;
         this.emptySearch = false;
-      } else if (categoryProductsState.status === "ERROR") {
+      } else if (categoryProductsState.status === 'ERROR') {
         this.toastService.send({
-          severity: "error", detail: "Error when fetching the products", summary: "Error",
+          severity: 'error',
+          detail: 'Error when fetching the products',
+          summary: 'Error',
         });
         this.loading = false;
         this.emptySearch = false;
       }
     });
   }
+
+
+
+
+  initSearchResultListener(): void {
+    this.searchSubscription = this.productService.searchResult
+      .subscribe(productsState => {
+        if (productsState.status === "OK" && productsState.value) {
+          this.productsResults = productsState.value;  // Full Page structure (with content, metadata)
+          this.products = productsState.value.content; // Extract the product list directly here
+        } else if (productsState.status === "ERROR") {
+          this.toastService.send({
+            severity: 'error',
+            summary: 'Error',
+            detail: "Error occured when fetching search result, please try again",
+          });
+        }
+        this.loadingSearch = false;
+      });
+    const searchQuery: SearchQuery = {
+      query: "",
+      page: this.searchPage
+    }
+    this.productService.search(searchQuery);
+  }
+
+  // Search filtering
+  onQueryChange(newQuery: string): void {
+    this.loadingSearch = true;
+    const searchQuery: SearchQuery = {
+      query: newQuery,
+      page: this.searchPage,
+    }
+    this.productService.search(searchQuery);
+  }
+
+  // Extract categories dynamically from the products
+  private extractCategories(products: CardProduct[]): void {
+    const categorySet = new Set<number>(); // Set to avoid duplicates
+
+    // Loop through products to extract distinct categories
+    products.forEach(product => {
+      categorySet.add(product.categoryId);
+      this.categoryMap.set(product.categoryId, product.categoryName); // map categoryId to categoryName
+    });
+
+    // Update global set to keep track of all categories
+    categorySet.forEach(categoryId => {
+      this.allCategories.add(categoryId); // Add unique categoryIds to the global set
+    });
+
+    // Add the "All" option to the dropdown
+    this.categoryOptions = [{ label: 'All', value: null }];
+
+    // Add the categories to the options based on the categoryMap
+    this.allCategories.forEach(categoryId => {
+      this.categoryOptions.push({
+        label: this.categoryMap.get(categoryId) || 'Unknown Category', // Get the name of the category
+        value: categoryId, // Use categoryId as value
+      });
+    });
+  }
+
+  private filterProductsByStatus(products: CardProduct[]): CardProduct[] {
+    if (this.selectedStatus === 'all') {
+      return [...products];  // No filter, return the same list
+    }
+
+    return products.filter(product => {
+      if (this.selectedStatus === 'instock') {
+        return product.availableQuantity > 5;
+      }
+      if (this.selectedStatus === 'lowstock') {
+        return product.availableQuantity > 0 && product.availableQuantity <= 5;
+      }
+      if (this.selectedStatus === 'outofstock') {
+        return product.availableQuantity <= 0;
+      }
+      return true;
+    });
+  }
+  private sortProducts(products: CardProduct[]): CardProduct[] {
+    if (this.selectedSort === '!salePrice') {
+      return [...products].sort((a, b) => b.price - a.price); // Price High to Low
+    } else if (this.selectedSort === 'salePrice') {
+      return [...products].sort((a, b) => a.price - b.price); // Price Low to High
+    } else if (this.selectedSort === 'name') {
+      return [...products].sort((a, b) => a.name.localeCompare(b.name)); // Alphabet A-Z
+    } else if (this.selectedSort === '!name') {
+      return [...products].sort((a, b) => b.name.localeCompare(a.name)); // Alphabet Z-A
+    } else if (this.selectedSort === '!quantity') {
+      return [...products].sort((a, b) => b.availableQuantity - a.availableQuantity); // Quantity High to Low
+    } else if (this.selectedSort === 'quantity') {
+      return [...products].sort((a, b) => a.availableQuantity - b.availableQuantity); // Quantity Low to High
+    }
+    return [...products]; // Default, no sorting applied
+  }
+
+  private filterByCategory(products: CardProduct[]): CardProduct[] {
+    const selectedCategoryId = +this.selectedCategory; // Ensure it's a number
+
+    if (selectedCategoryId === null || isNaN(selectedCategoryId)) {
+      return [...products]; // No category filter applied
+    } else {
+      return products.filter(product => product.categoryId === selectedCategoryId); // Apply category filter
+    }
+  }
+  private filterAndSortProducts() {
+    let filteredAndSortedProducts = [...this.fullProductList]; // Start with the full list
+
+    // Apply all the filters in sequence
+    filteredAndSortedProducts = this.filterProductsByStatus(filteredAndSortedProducts);
+    filteredAndSortedProducts = this.filterByCategory(filteredAndSortedProducts);
+    filteredAndSortedProducts = this.sortProducts(filteredAndSortedProducts);
+
+    // Set the result to `this.products`
+    this.products = filteredAndSortedProducts;
+  }
+
+  onStatusChange(event: any) {
+    this.selectedStatus = event.value; // Update selected status
+    this.filterAndSortProducts();      // Apply all filters and sorting
+  }
+
+  onSortChange(event: any) {
+    this.selectedSort = event.value;   // Update selected sort option
+    this.filterAndSortProducts();      // Apply all filters and sorting
+  }
+
+  onCategoryChange(event: any): void {
+    const selectedCategoryId = event.value;
+
+    // Fetch products for the selected category
+    this.productService.getAllByCategory(this.pageRequest, selectedCategoryId);
+
+    this.loading = true;
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 }

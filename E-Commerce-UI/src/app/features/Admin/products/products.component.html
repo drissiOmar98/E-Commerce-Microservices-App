@@ -1,5 +1,52 @@
 
 <p-toast />
+
+<!-- Reusable Header Template -->
+<ng-template #sharedHeader>
+  <div class="flex justify-content-between align-items-center flex-wrap">
+    <div class="flex flex-wrap gap-4">
+      <div class="flex flex-column">
+        <div class="text-m font-semibold mb-1">Sort</div>
+        <p-dropdown
+          placeholder="Sort"
+          [options]="sortOptions"
+          (onChange)="onSortChange($event)"
+        ></p-dropdown>
+      </div>
+      <div class="flex flex-column">
+        <div class="text-m font-semibold mb-1">Status</div>
+        <p-dropdown
+          placeholder="Status"
+          [options]="statusOptions"
+          [(ngModel)]="selectedStatus"
+          (onChange)="onStatusChange($event)"
+        ></p-dropdown>
+      </div>
+
+      <div class="flex flex-column">
+        <div class="text-m font-semibold mb-1">Category</div>
+        <p-dropdown
+          placeholder="Category"
+          [options]="categoryOptions"
+          (onChange)="onCategoryChange($event)"
+        ></p-dropdown>
+      </div>
+    </div>
+    <span class="p-input-icon-left w-full sm:w-auto">
+      <i class="pi pi-search"></i>
+      <input
+        class="w-full sm:w-auto"
+        type="text"
+        pInputText
+        [(ngModel)]="query"
+        (ngModelChange)="onQueryChange($event)"
+        placeholder="Search Product"
+      />
+    </span>
+  </div>
+</ng-template>
+
+
 <div class="grid">
   <div class="col-12">
     <div class="card">
@@ -34,42 +81,60 @@
           [sortOrder]="sortOrder"
           layout="grid"
         >
+<!--          <ng-template pTemplate="header">-->
+<!--            <div class="flex justify-content-between align-items-center flex-wrap">-->
+<!--              <div class="flex flex-wrap gap-4">-->
+<!--                &lt;!&ndash; Sort Dropdown &ndash;&gt;-->
+<!--                <div class="flex flex-column">-->
+<!--                  <div class="text-m font-semibold mb-1">Sort</div>-->
+<!--                  <p-dropdown-->
+<!--                    placeholder="Sort"-->
+<!--                    [options]="sortOptions"-->
+<!--                    (onChange)="onSortChange($event)"-->
+<!--                    class="mr-2"-->
+<!--                  ></p-dropdown>-->
+<!--                </div>-->
+
+<!--                &lt;!&ndash; Status Dropdown &ndash;&gt;-->
+<!--                <div class="flex flex-column">-->
+<!--                  <div class="text-m font-semibold mb-1">Status</div>-->
+<!--                  <p-dropdown-->
+<!--                    placeholder="Status"-->
+<!--                    [options]="statusOptions"-->
+<!--                    (onChange)="onStatusChange($event)"-->
+<!--                    class="mr-2"-->
+<!--                  ></p-dropdown>-->
+<!--                </div>-->
+
+<!--                &lt;!&ndash; Category Dropdown &ndash;&gt;-->
+<!--                <div class="flex flex-column">-->
+<!--                  <div class="text-m font-semibold mb-1">Category</div>-->
+<!--                  <p-dropdown-->
+<!--                    placeholder="Category"-->
+<!--                    [options]="categoryOptions"-->
+<!--                    (onChange)="onCategoryChange($event)"-->
+<!--                    class="mr-2"-->
+<!--                  ></p-dropdown>-->
+<!--                </div>-->
+<!--              </div>-->
+
+<!--              &lt;!&ndash; Search Input &ndash;&gt;-->
+<!--              <span class="p-input-icon-left w-full sm:w-auto">-->
+<!--      <i class="pi pi-search"></i>-->
+<!--      <input-->
+<!--        class="w-full sm:w-auto"-->
+<!--        type="text"-->
+<!--        pInputText-->
+<!--        (ngModelChange)="onQueryChange($event)"-->
+<!--        [(ngModel)]="query"-->
+<!--        placeholder="Search Product"-->
+<!--      />-->
+<!--    </span>-->
+<!--            </div>-->
+<!--          </ng-template>-->
+          <!-- Use the shared header template -->
           <ng-template pTemplate="header">
-            <div class="flex justify-content-between flex-column sm:flex-row">
-              <div class="flex">
-                <div class="flex flex-column">
-                  <div class="text-m font-semibold mb-1">Sort</div>
-                  <p-dropdown
-                    placeholder="Sort"
-                    [options]="sortOptions"
-                    (onChange)="onSortChange($event)"
-                    class="mr-2"
-                  ></p-dropdown>
-                </div>
-                <div class="flex flex-column">
-                  <div class="text-m font-semibold mb-1">Status</div>
-                  <p-dropdown
-                    placeholder="Status"
-                    [options]="statusOptions"
-                    (onChange)="onStatusChange($event)"
-                    class="mr-2"
-                  ></p-dropdown>
-                </div>
-                <div class="flex flex-column">
-                  <div class="text-m font-semibold mb-1">Category</div>
-                  <p-dropdown
-                    placeholder="Category"
-                    [options]="categoryOptions"
-                    (onChange)="onCategoryChange($event)"
-                    class="mr-2"
-                  ></p-dropdown>
-                </div>
-              </div>
-              <span class="p-input-icon-left mb-2">
-                <i class="pi pi-search"></i>
-                <input pInputText type="text" #filter placeholder="Search Keyword" class="w-full" (input)="onFilter(dv, $event)"/>
-              </span>
-            </div>
+            <ng-container *ngTemplateOutlet="sharedHeader"></ng-container>
           </ng-template>
           <ng-template let-products$ pTemplate="gridItem">
             <div class="grid grid-nogutter">
@@ -125,49 +190,9 @@
           [paginator]="true"
           responsiveLayout="scroll"
         >
+          <!-- Use the shared header template -->
           <ng-template pTemplate="caption">
-            <div class="flex justify-content-between flex-column sm:flex-row">
-              <div class="flex">
-                <div class="flex flex-column">
-                  <div class="text-m font-semibold mb-1">Sort</div>
-                  <p-dropdown
-                    placeholder="Sort"
-                    [options]="sortOptions"
-                    (onChange)="onSortChange($event)"
-                    class="mr-2"
-                  ></p-dropdown>
-                </div>
-                <div class="flex flex-column">
-                  <div class="text-m font-semibold mb-1">Status</div>
-                  <p-dropdown
-                    placeholder="Status"
-                    [options]="statusOptions"
-                    (onChange)="onStatusChange($event)"
-                    class="mr-2"
-                  ></p-dropdown>
-                </div>
-                <div class="flex flex-column">
-                  <div class="text-m font-semibold mb-1">Category</div>
-                  <p-dropdown
-                    placeholder="Category"
-                    [options]="categoryOptions"
-                    (onChange)="onCategoryChange($event)"
-                    class="mr-2"
-                  ></p-dropdown>
-                </div>
-              </div>
-              <span class="p-input-icon-left mb-2">
-          <i class="pi pi-search"></i>
-          <input
-            pInputText
-            type="text"
-            #filter
-            placeholder="Search Keyword"
-            class="w-full"
-            (input)="onTableFilter(dt1, $event)"
-          />
-        </span>
-            </div>
+            <ng-container *ngTemplateOutlet="sharedHeader"></ng-container>
           </ng-template>
           <ng-template pTemplate="header">
             <tr>
