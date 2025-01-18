@@ -1,0 +1,29 @@
+.product-image {
+  width: 100%;
+  max-width: 200px;
+  height: 200px;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 10px;
+}
+.badge {
+  padding: 5px 10px;
+  font-size: 0.8rem;
+  border-radius: 12px;
+  color: white;
+}
+
+.badge-success {
+  background-color: #28a745; /* Green */
+}
+
+.badge-warning {
+  background-color: #ffc107; /* Yellow */
+}
+
+.badge-danger {
+  background-color: #dc3545; /* Red */
+}
+
+

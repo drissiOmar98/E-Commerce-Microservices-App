@@ -119,7 +119,8 @@ export class AddproductComponent   implements OnDestroy{
     // Start a reactive effect to monitor changes in the creation status signal.
     effect(() => {
       if (this.productService.createSig().status === "OK") {
-        this.router.navigate(["admin", "list"]);
+        //this.router.navigate(["admin", "list"]);
+        this.router.navigate(["/admin/products/list"]);
       }
     });
   }

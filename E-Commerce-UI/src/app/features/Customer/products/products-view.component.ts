@@ -68,6 +68,7 @@ export class ProductsViewComponent implements OnInit, OnDestroy {
   // Sorting
   sortOptions!: any[];
   sortKey!: string;
+
   sortField!: string;
   sortOrder!: number;
 
@@ -312,6 +313,8 @@ export class ProductsViewComponent implements OnInit, OnDestroy {
       const categoryProductsState = this.productService.getAllByCategorySig();
       if (categoryProductsState.status === "OK") {
         this.products = categoryProductsState.value?.content;
+
+
         console.log('Products:', this.products);
         // Calculate price range if products exist
         if (this.products && this.products.length > 0) {
@@ -589,6 +592,9 @@ export class ProductsViewComponent implements OnInit, OnDestroy {
     }
     this.productService.search(searchQuery);
   }
+
+
+
 
 
 

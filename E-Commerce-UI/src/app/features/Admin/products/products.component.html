@@ -1,47 +1,11 @@
-<!-- <div class="card">
-  <p-table [value]="products$" [tableStyle]="{'min-width': '60rem'}">
-    <ng-template pTemplate="header">
-      <tr>
-        <th pSortableColumn="code" style="width:20%">
-          Code <p-sortIcon field="code" />
-        </th>
-        <th pSortableColumn="name" style="width:20%">
-          Name <p-sortIcon field="name" />
-        </th>
-        <th pSortableColumn="category" style="width:20%">
-          Category <p-sortIcon field="category" />
-        </th>
-        <th pSortableColumn="quantity" style="width:20%">
-          Quantity <p-sortIcon field="quantity" />
-        </th>
-      </tr>
-    </ng-template>
-    <ng-template pTemplate="body" let-product>
-      <tr>
-        <td>{{ product.code }}</td>
-        <td>{{ product.name }}</td>
-        <td>{{ product.category }}</td>
-        <td>{{ product.quantity }}</td>
-      </tr>
-    </ng-template>
-  </p-table>
-</div> -->
+
 <p-toast />
 <div class="grid">
   <div class="col-12">
     <div class="card">
       <div class="flex flex-row align-items-end mb-4">
         <div class="flex flex-1">
-<!--          <p-button-->
-<!--            icon="pi pi-plus"-->
-<!--            label="Add Product"-->
-<!--            (onClick)="addProduct()"-->
-<!--          />-->
-          <p-button
-            icon="pi pi-plus"
-            label="Add Product"
-            (click)="addNewProduct()"
-          />
+          <p-button icon="pi pi-plus" label="Add Product" (click)="addNewProduct()"/>
         </div>
         <div class="flex">
           <form [formGroup]="viewForm">
@@ -62,7 +26,7 @@
       <ng-container *ngIf="viewForm['value'].value == 'grid'; else tableView">
         <p-dataView
           #dv
-          [value]="filteredproducts$"
+          [value]="products"
           [rows]="9"
           [paginator]="true"
           filterBy="name"
@@ -103,90 +67,57 @@
               </div>
               <span class="p-input-icon-left mb-2">
                 <i class="pi pi-search"></i>
-                <input
-                  pInputText
-                  type="text"
-                  #filter
-                  placeholder="Search Keyword"
-                  class="w-full"
-                  (input)="onFilter(dv, $event)"
-                />
+                <input pInputText type="text" #filter placeholder="Search Keyword" class="w-full" (input)="onFilter(dv, $event)"/>
               </span>
             </div>
           </ng-template>
           <ng-template let-products$ pTemplate="gridItem">
             <div class="grid grid-nogutter">
-              <div class="col-12 md:col-4" *ngFor="let product of products$">
-                <div
-                  class="card m-3 border-1 surface-border"
-                  style="min-height: 450px"
-                >
-                  <div
-                    class="flex flex-wrap gap-2 align-items-center justify-content-between mb-2"
-                  >
-                    <div class="flex align-items-center">
-                      <span
-                        [class]="
-                          'category-badge ' + product.category.toLowerCase()
-                        "
-                      >
-                        {{ product.category.toUpperCase() }}
-                      </span>
+              @for (product of products; track product.id) {
+                <div class="col-12 sm:col-6 md:col-4">
+                  <div class="card m-3 border-1 surface-border" style="min-height: 450px">
+                    <div class="flex flex-wrap gap-2 align-items-center justify-content-between mb-2">
+                      <div class="flex align-items-center">
+              <span [class]="'category-badge ' + product.categoryName.toLowerCase()">
+                {{ product.categoryName.toUpperCase() }}
+              </span>
+                      </div>
                     </div>
-                    <span
-                      [class]="
-                        'product-badge status-' +
-                        product.inventoryStatus.toLowerCase()
-                      "
-                    >{{ product.inventoryStatus }}:{{
-                        product.quantity
-                      }}</span
-                    >
-                  </div>
-                  <div
-                    class="flex flex-column align-items-center text-center mb-3"
-                  >
-                    <img
-                      [src]="product.image"
-                      [alt]="product.name"
-                      class="shadow-2 my-3 mx-0"
-                      width="200"
-                      height="200"
-                      priority
-                    />
-                    <p
-                      class="text-2xl font-bold text-truncate">
-                      {{ product.name }}
-                    </p>
-                    <p-rating
-                      [(ngModel)]="product.rating"
-                      [readonly]="true"
-                      [cancel]="false"
-                      class="mt-2"
-                    ></p-rating>
-                    <span class="text-m mt-2"
-                    >RM{{ product.salePrice | number : "1.2-2" }}</span
-                    >
-                  </div>
-                  <div class="flex align-items-center justify-content-between">
-                    <span class="text-xl font-semibold"
-                    >{{ product.sold }}<i class="pi pi-shopping-cart mx-1"></i
-                    ></span>
-                    <p-button
-                      icon="pi pi-angle-right"
-                      (onClick)="viewProduct(product._id)"
-                    ></p-button>
+                    <div class="relative flex flex-column align-items-center" style="height: 100%;">
+                      <div class="content-section flex-grow p-3" style="height: calc(100% - 200px);">
+                        <div class="image-container flex justify-center items-center"
+                             style="height: 200px; width: 100%; max-width: 100%; margin-bottom: 10px;">
+                          <div
+                            [style.background-image]="'url(' + 'data:' + product.cover.fileContentType + ';base64,' + product.cover.file + ')'"
+                            class="product-image cursor-pointer"
+                            style="background-size: contain; background-position: center;">
+                          </div>
+                        </div>
+                        <p class="text-2xl font-bold text-truncate">{{ product.name }}</p>
+                        <p class="text-m mt-2 text-center">
+                          {{ product.price | number }}
+                          <fa-icon icon="dollar-sign" class="dollar"></fa-icon>
+                        </p>
+                      </div>
+                    </div>
+                    <div class="flex align-items-center justify-content-between">
+            <span class="text-xl font-semibold">
+              {{ product.availableQuantity }}<i class="pi pi-shopping-cart mx-1"></i>
+            </span>
+                      <p-button icon="pi pi-angle-right" (onClick)="viewProduct(product.id)"></p-button>
+                    </div>
                   </div>
                 </div>
-              </div>
+              }
             </div>
           </ng-template>
+
         </p-dataView>
       </ng-container>
       <ng-template #tableView>
         <p-table
           #dt1
-          [value]="filteredproducts$"
+          [value]="products ?? []"
           dataKey="name"
           [rows]="10"
           [rowHover]="true"
@@ -226,161 +157,79 @@
                 </div>
               </div>
               <span class="p-input-icon-left mb-2">
-                <i class="pi pi-search"></i>
-                <input
-                  pInputText
-                  type="text"
-                  #filter
-                  placeholder="Search Keyword"
-                  class="w-full"
-                  (input)="onTableFilter(dt1, $event)"
-                />
-              </span>
+          <i class="pi pi-search"></i>
+          <input
+            pInputText
+            type="text"
+            #filter
+            placeholder="Search Keyword"
+            class="w-full"
+            (input)="onTableFilter(dt1, $event)"
+          />
+        </span>
             </div>
           </ng-template>
           <ng-template pTemplate="header">
             <tr>
-              <th style="min-width: 12rem">
-                <div class="flex justify-content-between align-items-center">
-                  Name
-                </div>
-              </th>
-              <th style="min-width: 8rem">
-                <div class="flex justify-content-between align-items-center">
-                  Price (RM)
-                </div>
-              </th>
-              <th style="min-width: 12rem">
-                <div class="flex justify-content-between align-items-center">
-                  Rating
-                </div>
-              </th>
-              <th style="min-width: 8rem">
-                <div class="flex justify-content-between align-items-center">
-                  Quantity
-                </div>
-              </th>
-              <th style="min-width: 12rem">
-                <div class="flex justify-content-between align-items-center">
-                  Status
-                </div>
-              </th>
-              <th style="min-width: 12rem">
-                <div class="flex justify-content-between align-items-center">
-                  Category
-                </div>
-              </th>
-              <th style="min-width: 8rem">
-                <div class="flex justify-content-between align-items-center">
-                  Sold
-                </div>
-              </th>
-              <th style="min-width: 8rem">
-                <div class="flex justify-content-between align-items-center">
-                  Revenue (RM)
-                </div>
-              </th>
+              <th style="min-width: 12rem">Name</th>
+              <th style="min-width: 8rem">Price</th>
+              <th style="min-width: 8rem">Quantity</th>
+              <th style="min-width: 8rem">Status</th>
+              <th style="min-width: 12rem">Category</th>
               <th style="min-width: 2rem"></th>
             </tr>
           </ng-template>
           <ng-template pTemplate="body" let-product>
             <tr>
               <td>
-                {{ product.name }} (<span class="font-bold">{{
-                  product.code
-                }}</span
-              >)
+                <div class="product-details flex align-items-center">
+                  <div
+                    class="image-container"
+                    style="width: 100px; height: 100px; margin-right: 10px; border-radius: 4px; overflow: hidden; border: 1px solid #f1f1f1;"
+                  >
+                    <div
+                      [style.background-image]="'url(' + 'data:' + product.cover.fileContentType + ';base64,' + product.cover.file + ')'"
+                      class="product-image"
+                      style="width: 100%; height: 100%; background-size: contain; background-position: center; object-fit: contain;"
+                    ></div>
+                  </div>
+                  <div>{{ product?.name }}</div>
+                </div>
               </td>
-              <td>{{ product.salePrice | number : "1.2-2" }}</td>
+
+
+
+              <td>
+                {{ product?.price | number }} <fa-icon icon="dollar-sign"></fa-icon>
+              </td>
+              <td style="text-align: center">{{ product?.availableQuantity }}</td>
               <td style="text-align: center">
-                <p-rating
-                  [(ngModel)]="product.rating"
-                  [readonly]="true"
-                  [cancel]="false"
-                ></p-rating>
+  <span
+    [ngClass]="{
+      'badge-success': product?.availableQuantity > 5,
+      'badge-warning': product?.availableQuantity > 0 && product?.availableQuantity <= 5,
+      'badge-danger': product?.availableQuantity <= 0
+    }"
+    class="badge"
+  >
+    {{ product?.availableQuantity > 5 ? 'In Stock' : (product?.availableQuantity > 0 ? 'Low Stock' : 'Out of Stock') }}
+  </span>
               </td>
-              <td class="font-bold" style="text-align: center">
-                {{ product.quantity }}
-              </td>
-              <td>
-                <span
-                  [class]="
-                    'product-badge status-' +
-                    product.inventoryStatus.toLowerCase()
-                  "
-                >{{ product.inventoryStatus }}</span
-                >
-              </td>
-              <td>
-                <span
-                  [class]="'category-badge ' + product.category.toLowerCase()"
-                >
-                  {{ product.category.toUpperCase() }}
-                </span>
-              </td>
-              <td class="font-bold" style="text-align: center">
-                {{ product.sold }}
-              </td>
-              <td>
-                {{ product.revenue | number : "1.2-2" }}
-              </td>
+
+              <td>{{ product?.categoryName | uppercase }}</td>
               <td style="text-align: center">
                 <p-button
                   icon="pi pi-angle-right"
                   size="small"
-                  (onClick)="viewProduct(product._id)"
-                />
+                  (onClick)="viewProduct(product?.id)"
+                ></p-button>
               </td>
             </tr>
           </ng-template>
         </p-table>
-        <!-- <div class="col-12" *ngFor="let product of products$$">
-          <div
-            class="flex-1 flex flex-column md:flex-row align-items-center p-3 w-full"
-          >
-            <div class="flex-column align-items-center justify-content-center">
-              <img
-                [src]="product.image"
-                [alt]="product.name"
-                class="my-4 md:my-0 w-9 md:w-10rem shadown-2 mr-5"
-              />
-              <div>{{ product.name }}</div>
-            </div>
-
-            <div
-              class="flex-1 flex flex-column align-items-center text-center md:text-left"
-            >
-              <div class="text-l">{{ product.name }}</div>
-            </div>
-            <div
-              class="flex-1 flex flex-column align-items-center text-center md:text-left"
-            >
-              <p-rating
-                [(ngModel)]="product.rating"
-                [readonly]="true"
-                [cancel]="false"
-                class="mt-2"
-              ></p-rating>
-            </div>
-            <div
-              class="flex-1 flex flex-column align-items-center text-center md:text-left"
-            >
-              <span class="text-l font-semibold"
-                >RM{{ product.salePrice }}</span
-              >
-            </div>
-            <div
-              class="flex-2 flex flex-column align-items-end text-end md:text-left"
-            >
-              <p-button
-                icon="pi pi-angle-right"
-                (onClick)="viewProduct(product._id)"
-              ></p-button>
-            </div>
-          </div>
-          <p-divider />
-        </div> -->
       </ng-template>
+
+
     </div>
   </div>
 </div>

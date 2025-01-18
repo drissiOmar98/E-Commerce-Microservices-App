@@ -1,12 +1,16 @@
-import {Component, inject, OnInit} from '@angular/core';
+import {Component, effect, inject, OnDestroy, OnInit} from '@angular/core';
 
 import {FormControl, FormGroup} from "@angular/forms";
 import {Table} from "primeng/table";
 import {SelectItem} from "primeng/api";
-import {Router} from "@angular/router";
+import {ActivatedRoute, Router} from "@angular/router";
 import { DataView } from 'primeng/dataview';
 import {DialogService, DynamicDialogRef} from "primeng/dynamicdialog";
 import {AddproductComponent} from "./addproduct/addproduct.component";
+import {ToastService} from "../services/toast.service";
+import {ProductService} from "../services/product.service";
+import {CardProduct} from "../model/product.model";
+import {Pagination} from "../../../shared/model/request.model";
 
 
 
@@ -15,7 +19,15 @@ import {AddproductComponent} from "./addproduct/addproduct.component";
   templateUrl: './products.component.html',
   styleUrl: './products.component.scss'
 })
-export class ProductsComponent implements OnInit {
+export class ProductsComponent implements OnInit , OnDestroy  {
+  router = inject(Router);
+  activatedRoute = inject(ActivatedRoute);
+  toastService = inject(ToastService);
+  productService= inject(ProductService);
+  products: Array<CardProduct> | undefined = [];  // Array to store the products
+  pageRequest: Pagination = {size: 20, page: 0, sort: ["name", "ASC"]};
+  loading = false;
+  emptySearch = false;
 
   ref: DynamicDialogRef | undefined;
 
@@ -140,10 +152,10 @@ export class ProductsComponent implements OnInit {
 
   constructor(
     //private store: Store<any>,
-    private router: Router,
     //private messageService: MessageService,
     //private toastService: ToastService
   ) {
+    this.listenToGetAllByCategory();
     /*this.store.select(selectProducts).subscribe((x) => {
       this.products$ = x.products;
       this.filteredproducts$ = this.products$;
@@ -160,7 +172,7 @@ export class ProductsComponent implements OnInit {
     this.filteredproducts$ = this.products$;
   }
 
-  viewProduct(id: string): void {
+  viewProduct(id: number): void {
     this.router.navigate(['/products', id]);
   }
 
@@ -261,6 +273,7 @@ export class ProductsComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.fetchProductsForCategory();
     const navigation = this.router.getCurrentNavigation();
     const state = navigation?.extras?.state as {
       message: string;
@@ -275,6 +288,10 @@ export class ProductsComponent implements OnInit {
       console.log('message added');
     }
   }
+  ngOnDestroy() {
+    this.productService.resetGetAllCategory();
+  }
+
 
   openNew() {
 
@@ -292,4 +309,39 @@ export class ProductsComponent implements OnInit {
         dismissableMask: true
       })
   }
+
+  private fetchProductsForCategory(): void {
+    this.activatedRoute.queryParams.subscribe((params) => {
+      const categoryId = params['categoryId'];
+      const defaultPagination = { page: 0, size: 10 }; // Set your default pagination values
+
+      // Always call the service to fetch products, with or without categoryId
+      this.productService.getAllByCategory(this.pageRequest, categoryId ? +categoryId : null);
+      this.loading = true; // Set loading state while fetching
+
+      if (!categoryId) {
+        this.emptySearch = false; // Not an empty search, but fetching all products
+      }
+    });
+  }
+
+
+  private listenToGetAllByCategory() {
+    effect(() => {
+      const categoryProductsState = this.productService.getAllByCategorySig();
+      if (categoryProductsState.status === "OK") {
+        this.products = categoryProductsState.value?.content;
+        this.loading = false;
+        this.emptySearch = false;
+      } else if (categoryProductsState.status === "ERROR") {
+        this.toastService.send({
+          severity: "error", detail: "Error when fetching the products", summary: "Error",
+        });
+        this.loading = false;
+        this.emptySearch = false;
+      }
+    });
+  }
+
+
 }
