@@ -21,6 +21,9 @@ Here is an overview of the main microservices in this project:
 - **📦 Order Server**: Handles order creation, management, and tracking.
 - **💳 Payment Server**: Manages payment transactions for orders.
 - **🛍️ Product Server**: Handles product catalog, search, and inventory management.
+- **🛒 Cart Service**: Manages shopping cart operations, such as adding, updating, and removing items.
+- **💬 Feedback Service**: Allows users to post reviews and ratings for purchased products.
+- **❤️ Favorite Service**:  Enables users to mark products as favorites for future reference.
 
 
 
