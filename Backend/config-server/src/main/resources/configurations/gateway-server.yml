@@ -58,3 +58,8 @@ spring:
           uri: lb:http://FAVOURITE-SERVICE
           predicates:
             - Path=/api/v1/favourites/**
+
+        - id: feedback-service
+          uri: lb:http://FEEDBACK-SERVICE
+          predicates:
+            - Path=/api/v1/feedbacks/**

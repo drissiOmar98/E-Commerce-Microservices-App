@@ -1,0 +1,29 @@
+server:
+  port: 8010
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/feedbacks
+    username: omar
+    password: omar
+    hikari:
+      poolName: Hikari
+      auto-commit: false
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+  flyway:
+    baseline-on-migrate: true
+    enabled: true
+    baseline-description: "init"
+    baseline-version: 0
+    user: ${spring.datasource.username}
+    password: ${spring.datasource.password}
+
+
+
+application:
+  config:
+    product-url: http://localhost:8222/api/v1/products
