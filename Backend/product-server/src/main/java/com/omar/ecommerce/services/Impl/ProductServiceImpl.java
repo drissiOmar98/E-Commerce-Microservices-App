@@ -1,5 +1,7 @@
 package com.omar.ecommerce.services.Impl;
 
+import com.omar.ecommerce.client.FeedBack.FeedbackClient;
+import com.omar.ecommerce.client.FeedBack.FeedbackResponse;
 import com.omar.ecommerce.common.state.State;
 import com.omar.ecommerce.dto.*;
 
@@ -11,7 +13,6 @@ import com.omar.ecommerce.mapper.ProductMapper;
 import com.omar.ecommerce.repositories.ProductRepository;
 import com.omar.ecommerce.services.PictureService;
 import com.omar.ecommerce.services.ProductService;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.Page;
@@ -34,6 +35,8 @@ public class ProductServiceImpl implements ProductService {
     private final ProductMapper productMapper;
 
     private final PictureService pictureService;
+
+    private final FeedbackClient feedbackClient;
 
 
     @Override
@@ -123,8 +126,23 @@ public class ProductServiceImpl implements ProductService {
             // Fetch all products with cover image only
             allOrProductsCategory = productRepository.findAllWithCoverOnly(pageable);
         }
-        // Map the products to DisplayCardProductDTO
-        return allOrProductsCategory.map(productMapper::productToDisplayCardProductDTO);
+        // Map products and dynamically calculate rates
+        return allOrProductsCategory.map(product -> {
+            // Map to initial DTO
+            DisplayCardProductDTO dto = productMapper.productToDisplayCardProductDTO(product);
+
+            // Calculate the rate using the FeedbackClient
+            double rate = feedbackClient
+                    .getFeedbacksByProductId(product.getId(), Pageable.unpaged())
+                    .getContent()
+                    .stream()
+                    .mapToDouble(FeedbackResponse::getNote)
+                    .average()
+                    .orElse(0.0);
+
+            // Return DTO with updated rate
+            return dto.withRate(rate); // Use `withRate` to maintain immutability of record
+        });
     }
 
     @Override

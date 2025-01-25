@@ -38,6 +38,7 @@ public interface ProductMapper {
     @Mapping(target = "categoryId", source = "category.id")  // Map category ID from Product's Category
     @Mapping(target = "categoryName", source = "category.name")  // Map category name from Product's Category
     @Mapping(target = "categoryDescription", source = "category.description")  // Map category description from Product's Category
+    @Mapping(target = "rate", ignore = true)
     DisplayCardProductDTO productToDisplayCardProductDTO(Product product);
 
 
