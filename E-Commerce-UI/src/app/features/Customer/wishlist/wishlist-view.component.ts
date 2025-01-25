@@ -99,6 +99,7 @@ export class WishlistViewComponent implements OnInit ,OnDestroy  {
       subcategoryId: 0, // Add correct mapping if available
       subcategoryName: fav.subcategoryName,
       cover: fav.cover,
+      rate: 0.0,
     }));
   }
 

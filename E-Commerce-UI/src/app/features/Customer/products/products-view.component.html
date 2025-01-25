@@ -93,15 +93,19 @@
       </ng-template>
 
       <ng-template let-product  pTemplate="gridItem">
-        @for (product of products; track product.id){
-        <div class="w-full sm:w-10 md:w-10 lg:w-2 xl:w-3 p-2" >
-          <app-product (addedToCart)="addToCart($event)" (addedToWishList)="addToWishList($event)"
-                       [isListView]="false" (removedFromCart)="removeFromCart($event)"
-                       (removedFromWishList)="removedFromWishList($event)"
-                       [productX]="product"
-                       ></app-product>
+        <div class="grid grid-nogutter">
+          @for (product of products; track product.id){
+            <div class="w-full sm:w-10 md:w-10 lg:w-2 xl:w-3 p-2" >
+              <app-product (addedToCart)="addToCart($event)" (addedToWishList)="addToWishList($event)"
+                           [isListView]="false" (removedFromCart)="removeFromCart($event)"
+                           (removedFromWishList)="removedFromWishList($event)"
+                           [productX]="product"
+              ></app-product>
+            </div>
+          }
+
         </div>
-        }
+
       </ng-template>
     </p-dataView>
     <ng-template #loading2>

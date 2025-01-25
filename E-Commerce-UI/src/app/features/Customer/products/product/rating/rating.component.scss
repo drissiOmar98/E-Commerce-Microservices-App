@@ -1,0 +1,21 @@
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 4px; /* Spacing between stars */
+  cursor: pointer;
+}
+
+.rating i {
+  font-size: 1rem; /* Adjust size of stars */
+  color: #ffd700; /* Gold color for full and half stars */
+  transition: transform 0.2s ease; /* Animation for interactivity */
+}
+
+.rating i.far {
+  color: #ccc; /* Light gray color for empty stars */
+}
+
+.rating i:hover,
+.rating i:hover ~ i {
+  transform: scale(1.2); /* Enlarge stars on hover for a better UI */
+}

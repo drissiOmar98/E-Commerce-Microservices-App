@@ -29,6 +29,7 @@ export interface CardProduct {
   subcategoryId: number;
   subcategoryName: string;
   cover: DisplayPicture;
+  rate: number;
 }
 
 export interface DisplayPicture {
@@ -53,6 +54,7 @@ export interface Product {
   subcategoryId: number;
   subcategoryName: string;
   pictures: Array<DisplayPicture>;
+  rate:number;
 }
 
 export interface SearchQuery {

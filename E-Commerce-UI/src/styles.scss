@@ -3,6 +3,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter&family=Poppins&family=Rubik:wght@400;500;700&display=swap");
 $gutter: 1rem; //for primeflex grid system
 @import "assets/layout/styles/layout/layout.scss";
+@import "@fortawesome/fontawesome-free/css/all.min.css";
 
 * {
   font-family: "Inter", sans-serif;

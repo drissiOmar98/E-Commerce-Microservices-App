@@ -30,6 +30,7 @@ import { StepsModule } from 'primeng/steps';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { ProductsRoutingModule } from './products-routing.module';
 import {FaIconComponent} from "@fortawesome/angular-fontawesome";
+import {RatingComponent} from "./product/rating/rating.component";
 
 
 @NgModule({
@@ -39,7 +40,8 @@ import {FaIconComponent} from "@fortawesome/angular-fontawesome";
     FiltersComponent,
     ProductDetailsComponent,
     CategoriesViewComponent,
-    CategoryComponent
+    CategoryComponent,
+    RatingComponent
   ],
   imports: [
     CommonModule,
