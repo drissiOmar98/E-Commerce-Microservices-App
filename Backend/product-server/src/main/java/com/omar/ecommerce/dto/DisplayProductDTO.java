@@ -20,4 +20,6 @@ public class DisplayProductDTO {
     private Integer subcategoryId;  // New field for Subcategory ID
     private String subcategoryName; // New field for Subcategory name
     private List<PictureDTO> pictures ;// For detailed view of all images
+    private Double rate; // Average rating
+    private List<String> comments; // Only the comments as strings
 }

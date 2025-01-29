@@ -55,6 +55,7 @@ export interface Product {
   subcategoryName: string;
   pictures: Array<DisplayPicture>;
   rate:number;
+  comments: Array<String>;
 }
 
 export interface SearchQuery {

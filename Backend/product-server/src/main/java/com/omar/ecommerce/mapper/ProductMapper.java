@@ -47,6 +47,8 @@ public interface ProductMapper {
     @Mapping(target = "categoryDescription", source = "category.description")
     @Mapping(target = "subcategoryId", source = "subcategory.id") // Map subcategory ID
     @Mapping(target = "subcategoryName", source = "subcategory.name") // Map subcategory name
+    @Mapping(target = "rate", ignore = true) // Ignore for dynamic calculation
+    @Mapping(target = "comments", ignore = true) // Ignore for dynamic mapping
     DisplayProductDTO productToDisplayProductDTO(Product product);
 
 

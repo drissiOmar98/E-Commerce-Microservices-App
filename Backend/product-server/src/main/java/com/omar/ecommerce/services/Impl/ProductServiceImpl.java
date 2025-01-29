@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -155,6 +156,28 @@ public class ProductServiceImpl implements ProductService {
         }
 
         DisplayProductDTO displayProductDTO = productMapper.productToDisplayProductDTO(productById.get());
+
+        // Calculate average rating
+        double rate = feedbackClient
+                .getFeedbacksByProductId(productId, Pageable.unpaged())
+                .getContent()
+                .stream()
+                .mapToDouble(FeedbackResponse::getNote)
+                .average()
+                .orElse(0.0);
+
+        displayProductDTO.setRate(rate);
+
+        // Extract and set comments
+        List<String> comments = feedbackClient
+                .getFeedbacksByProductId(productId, Pageable.unpaged())
+                .getContent()
+                .stream()
+                .map(FeedbackResponse::getComment) // Only extract the comment
+                .collect(Collectors.toList());
+
+        displayProductDTO.setComments(comments);
+
 
         return State.<DisplayProductDTO, String>builder().forSuccess(displayProductDTO);
 

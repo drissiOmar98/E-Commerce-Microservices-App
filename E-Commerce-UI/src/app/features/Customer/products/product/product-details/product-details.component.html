@@ -51,6 +51,10 @@
                     <h2 class="font-bold">
                         {{ myProduct.name }}
                     </h2>
+                  <div  class="rating-container flex items-center justify-center">
+                    <app-rating [rating]="myProduct.rate || 0"></app-rating>
+                    <span class="rating-value text-sm font-bold ml-2" *ngIf="myProduct.rate || 0 > 0">{{ myProduct.rate | number:'1.1-1' }}</span>
+                  </div>
                     <span class="align-self-start font-light text-green-400 text-sm"
                           *ngIf="myProduct.availableQuantity > 0; else notAvailable">Available</span>
                     <ng-template #notAvailable="">
