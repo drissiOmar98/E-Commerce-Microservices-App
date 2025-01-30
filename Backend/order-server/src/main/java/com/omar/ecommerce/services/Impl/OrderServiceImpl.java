@@ -1,5 +1,8 @@
 package com.omar.ecommerce.services.Impl;
 
+import com.omar.ecommerce.client.cart.CartClient;
+import com.omar.ecommerce.client.cart.CartDTO;
+import com.omar.ecommerce.client.cart.CartItemDTO;
 import com.omar.ecommerce.client.customer.CustomerClient;
 import com.omar.ecommerce.client.customer.CustomerResponse;
 import com.omar.ecommerce.client.payment.PaymentClient;
@@ -27,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -41,6 +45,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderLineService orderLineService;
     private final OrderProducer orderProducer;
     private final PaymentClient paymentClient;
+    private final CartClient cartClient;
 
 
 
@@ -48,64 +53,63 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public Integer createOrder(OrderRequest request, Authentication connectedUser) {
 
-//        //check if the customer exists (customer-ms)
-//        var customer = this.customerClient.findCustomerById(request.customerId())
-//                .orElseThrow(() -> new BusinessException("Cannot create order:: No customer exists with the provided ID"));
-
-        // Get the authenticated customer's details
+        // 🔹 Fetch the authenticated customer
         CustomerResponse authenticatedCustomer = getAuthenticatedCustomer(connectedUser);
 
+        // 🔹 Retrieve the cart
+        CartDTO cart = cartClient.getCart();
+        if (cart == null || cart.getCartItems().isEmpty()) {
+            throw new IllegalStateException("Cart is empty. Cannot create an order.");
+        }
 
+        // 🔹 Extract purchase requests from cart items
+        List<PurchaseRequest> purchaseRequests = cart.getCartItems().stream()
+                .map(item -> new PurchaseRequest(item.getProductId(), item.getQuantity()))
+                .toList();
 
-        // purchase the products ==> product-ms (RestTemplate)
-        //var purchasedProducts = this.productClient.purchaseProducts(request.products());
-
-        // Purchase the products ==> product-ms (RestTemplate)
-        PurchaseResponse purchasedResponse = this.productClient.purchaseProducts(request.products());
-
-        // Extract purchased products and total price from the response
+        // 🔹 Purchase products from product-service (RestTemplate)
+        PurchaseResponse purchasedResponse = this.productClient.purchaseProducts(purchaseRequests);
         List<ProductPurchaseResponse> purchasedProducts = purchasedResponse.purchasedProducts();
         double totalPrice = purchasedResponse.totalPrice();
 
-        // persist order
-        var order = this.orderRepository.save(orderMapper.toOrder(request, totalPrice, authenticatedCustomer));
+        // 🔹 Generate a unique order reference (UUID can be used as a unique identifier)
+        String orderReference = UUID.randomUUID().toString();
+
+        // 🔹 persist order and Use OrderMapper to map the OrderRequest to an Order entity
+        var order = this.orderRepository
+                .save
+                (orderMapper.toOrder(request, totalPrice, authenticatedCustomer, orderReference));
 
 
+        // 🔹 Persist order lines based on cart items
+        for (CartItemDTO cartItem : cart.getCartItems()) {
+            // Create an OrderLineRequest for each item in the cart
+            orderLineService.saveOrderLine(new OrderLineRequest(
+                    order.getId(),
+                    cartItem.getProductId(),
+                    cartItem.getQuantity()
+            ));
 
-        // persist order line
-        for (PurchaseRequest purchaseRequest : request.products()) {
-            // Check if the productId and quantity are correct
-            log.debug("Saving order line for productId: {} with quantity: {}", purchaseRequest.productId(), purchaseRequest.quantity());
-            orderLineService.saveOrderLine(
-                    new OrderLineRequest(
-                            order.getId(),
-                            purchaseRequest.productId(),
-                            purchaseRequest.quantity()
-                    )
-            );
         }
 
-        // start the payment
+
+        // 🔹 Start the payment process
         var paymentRequest = new PaymentRequest(
-                //request.amount(),
                 BigDecimal.valueOf(totalPrice),
                 request.paymentMethod(),
                 order.getId(),
                 order.getReference(),
-                //customer
                 authenticatedCustomer
         );
         paymentClient.requestOrderPayment(paymentRequest);
 
 
-        // send the order confirmation --> notif-ms (Kafka)
+        // 🔹 Send order confirmation notification (Kafka)
         orderProducer.sendOrderConfirmation(
                 new OrderConfirmation(
-                        request.reference(),
-                        //request.amount(),
+                        orderReference,
                         BigDecimal.valueOf(totalPrice),
                         request.paymentMethod(),
-                        //customer,
                         authenticatedCustomer,
                         purchasedProducts
                 )

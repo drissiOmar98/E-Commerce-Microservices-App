@@ -9,19 +9,17 @@ import java.math.BigDecimal;
 @Service
 public class OrderMapper {
 
-    public Order toOrder(OrderRequest request, double totalPrice, CustomerResponse authenticatedCustomer){
+    public Order toOrder(OrderRequest request, double totalPrice, CustomerResponse authenticatedCustomer, String reference){
         if (request == null){
             return null;
         }
         return Order.builder()
                 .id(request.id())
-                .reference(request.reference())
+                .reference(reference)  // Use the dynamically generated reference
                 .totalAmount(BigDecimal.valueOf(totalPrice))
                 .paymentMethod(request.paymentMethod())
-                //.customerId(request.customerId())
                 .customerId(authenticatedCustomer.id())
                 .build();
-
     }
 
     public OrderResponse fromOrder(Order order) {
